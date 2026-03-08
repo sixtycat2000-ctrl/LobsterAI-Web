@@ -3,14 +3,14 @@
  * Tests WebSocket connection, subscription, and message handling.
  */
 
-import { describe, it, before, after } from 'node:test';
-import assert from 'node:assert';
-import WebSocket from 'ws';
-import { createTestServer } from './setup.js';
+const { describe, it, before, after } = require('node:test');
+const assert = require('node:assert');
+const WebSocket = require('ws');
+const { createTestServer } = require('./setup.js');
 
 describe('WebSocket Tests', () => {
-  let testServer: TestServer;
-  let wsUrl: string;
+  let testServer;
+  let wsUrl;
 
   before(async () => {
     testServer = await createTestServer();
@@ -28,7 +28,7 @@ describe('WebSocket Tests', () => {
     it('connects successfully and receives welcome message', async () => {
       const ws = new WebSocket(wsUrl);
 
-      const welcomeMessage = await new Promise<any>((resolve, reject) => {
+      const welcomeMessage = await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           ws.close();
           reject(new Error('Connection timeout'));
@@ -63,13 +63,13 @@ describe('WebSocket Tests', () => {
 
     it('handles multiple simultaneous connections', async () => {
       const connectionCount = 3;
-      const connections: WebSocket[] = [];
-      const clientIds: string[] = [];
+      const connections = [];
+      const clientIds = [];
 
       for (let i = 0; i < connectionCount; i++) {
         const ws = new WebSocket(wsUrl);
 
-        const welcomeMessage = await new Promise<any>((resolve, reject) => {
+        const welcomeMessage = await new Promise((resolve, reject) => {
           const timeout = setTimeout(() => {
             reject(new Error(`Connection ${i} timeout`));
           }, 5000);
@@ -101,7 +101,7 @@ describe('WebSocket Tests', () => {
     it('handles connection close gracefully', async () => {
       const ws = new WebSocket(wsUrl);
 
-      await new Promise<void>((resolve, reject) => {
+      await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('Connection timeout'));
         }, 5000);
@@ -115,7 +115,7 @@ describe('WebSocket Tests', () => {
       });
 
       // Close and verify
-      const closeEvent = await new Promise<number>((resolve) => {
+      const closeEvent = await new Promise((resolve) => {
         ws.on('close', (code) => resolve(code));
         ws.close();
       });
@@ -130,7 +130,7 @@ describe('WebSocket Tests', () => {
       const ws = new WebSocket(wsUrl);
 
       // Wait for connection and welcome message
-      await new Promise<void>((resolve, reject) => {
+      await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('Connection timeout'));
         }, 5000);
@@ -148,7 +148,7 @@ describe('WebSocket Tests', () => {
       ws.send(JSON.stringify({ type: 'ping', data: {} }));
 
       // Wait for pong
-      const pongMessage = await new Promise<any>((resolve, reject) => {
+      const pongMessage = await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           ws.close();
           reject(new Error('Pong timeout'));
@@ -179,19 +179,19 @@ describe('WebSocket Tests', () => {
       const ws = new WebSocket(wsUrl);
 
       // Wait for connection
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.on('open', resolve);
       });
 
       // Consume welcome message
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.once('message', () => resolve());
       });
 
       const beforeTime = Date.now();
       ws.send(JSON.stringify({ type: 'ping', data: {} }));
 
-      const pongMessage = await new Promise<any>((resolve, reject) => {
+      const pongMessage = await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           ws.close();
           reject(new Error('Pong timeout'));
@@ -225,12 +225,12 @@ describe('WebSocket Tests', () => {
       const ws = new WebSocket(wsUrl);
 
       // Wait for connection
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.on('open', resolve);
       });
 
       // Consume welcome message
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.once('message', () => resolve());
       });
 
@@ -242,7 +242,7 @@ describe('WebSocket Tests', () => {
       }));
 
       // Wait a bit for subscription to process
-      await new Promise<void>((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // The subscription should have been processed (no error)
       // We can verify by checking server logs or by broadcasting to the room
@@ -254,12 +254,12 @@ describe('WebSocket Tests', () => {
       const ws = new WebSocket(wsUrl);
 
       // Wait for connection
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.on('open', resolve);
       });
 
       // Consume welcome message
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.once('message', () => resolve());
       });
 
@@ -271,7 +271,7 @@ describe('WebSocket Tests', () => {
         data: roomId,
       }));
 
-      await new Promise<void>((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Unsubscribe
       ws.send(JSON.stringify({
@@ -279,7 +279,7 @@ describe('WebSocket Tests', () => {
         data: roomId,
       }));
 
-      await new Promise<void>((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       ws.close();
     });
@@ -288,12 +288,12 @@ describe('WebSocket Tests', () => {
       const ws = new WebSocket(wsUrl);
 
       // Wait for connection
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.on('open', resolve);
       });
 
       // Consume welcome message
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.once('message', () => resolve());
       });
 
@@ -311,7 +311,7 @@ describe('WebSocket Tests', () => {
         }));
       });
 
-      await new Promise<void>((resolve) => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       ws.close();
     });
@@ -323,12 +323,12 @@ describe('WebSocket Tests', () => {
       const ws = new WebSocket(wsUrl);
 
       // Wait for connection
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.on('open', resolve);
       });
 
       // Consume welcome message
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.once('message', () => resolve());
       });
 
@@ -336,7 +336,7 @@ describe('WebSocket Tests', () => {
       ws.send('not valid json');
 
       // Wait a bit - the connection should remain open
-      await new Promise<void>((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Connection should still be open
       assert.strictEqual(ws.readyState, WebSocket.OPEN);
@@ -348,12 +348,12 @@ describe('WebSocket Tests', () => {
       const ws = new WebSocket(wsUrl);
 
       // Wait for connection
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.on('open', resolve);
       });
 
       // Consume welcome message
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.once('message', () => resolve());
       });
 
@@ -364,7 +364,7 @@ describe('WebSocket Tests', () => {
       }));
 
       // Wait a bit - the connection should remain open
-      await new Promise<void>((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       assert.strictEqual(ws.readyState, WebSocket.OPEN);
 
@@ -375,12 +375,12 @@ describe('WebSocket Tests', () => {
       const ws = new WebSocket(wsUrl);
 
       // Wait for connection
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.on('open', resolve);
       });
 
       // Consume welcome message
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.once('message', () => resolve());
       });
 
@@ -391,7 +391,7 @@ describe('WebSocket Tests', () => {
       }));
 
       // Wait a bit - the connection should remain open
-      await new Promise<void>((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       assert.strictEqual(ws.readyState, WebSocket.OPEN);
 
@@ -405,7 +405,7 @@ describe('WebSocket Tests', () => {
       // First connection
       const ws1 = new WebSocket(wsUrl);
 
-      const welcome1 = await new Promise<any>((resolve, reject) => {
+      const welcome1 = await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           ws1.close();
           reject(new Error('First connection timeout'));
@@ -426,12 +426,12 @@ describe('WebSocket Tests', () => {
       ws1.close();
 
       // Wait for disconnect
-      await new Promise<void>((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Second connection
       const ws2 = new WebSocket(wsUrl);
 
-      const welcome2 = await new Promise<any>((resolve, reject) => {
+      const welcome2 = await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           ws2.close();
           reject(new Error('Second connection timeout'));
@@ -464,7 +464,7 @@ describe('WebSocket Tests', () => {
       // Try to send before connection (should be queued by ws library)
       // This tests that the library handles this gracefully
 
-      const welcomeMessage = await new Promise<any>((resolve, reject) => {
+      const welcomeMessage = await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           ws.close();
           reject(new Error('Connection timeout'));
@@ -491,12 +491,12 @@ describe('WebSocket Tests', () => {
       const ws = new WebSocket(wsUrl);
 
       // Wait for connection
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.on('open', resolve);
       });
 
       // Consume welcome message
-      await new Promise<void>((resolve) => {
+      await new Promise((resolve) => {
         ws.once('message', () => resolve());
       });
 
@@ -505,7 +505,7 @@ describe('WebSocket Tests', () => {
       ws.send(buffer);
 
       // Wait a bit - the connection should handle it gracefully
-      await new Promise<void>((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Connection should still be open (or closed due to parse error, which is also acceptable)
       assert.ok(

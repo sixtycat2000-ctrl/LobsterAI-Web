@@ -137,7 +137,11 @@ export class SqliteStore {
         expires_at TEXT,
         notify_platforms TEXT DEFAULT '[]',
         created_at TEXT,
-        updated_at TEXT
+        updated_at TEXT,
+        running_at_ms INTEGER,
+        last_status TEXT,
+        last_error TEXT,
+        last_run_at TEXT
       )
     `);
 
@@ -153,6 +157,7 @@ export class SqliteStore {
         duration_ms INTEGER,
         error TEXT,
         trigger TEXT DEFAULT 'scheduled',
+        running_at_ms INTEGER,
         FOREIGN KEY (task_id) REFERENCES scheduled_tasks(id)
       )
     `);

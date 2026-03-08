@@ -1,33 +1,19 @@
 /**
  * Tests for React Components
- * Simple DOM tests using a minimal mock DOM environment
+ * Tests component logic and helper functions without full React rendering.
  *
- * Note: These tests verify component logic and structure without full React rendering.
- * For full component testing, consider using @testing-library/react with a jsdom setup.
+ * These tests validate:
+ * - Component prop validation
+ * - Helper functions and utilities
+ * - State management logic
+ * - UI behavior patterns
  */
 
-import { describe, it, beforeEach, mock } from 'node:test';
+import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
 
-// ==================== Mock DOM Environment ====================
+// ==================== Type Definitions ====================
 
-// Simple mock for DOM testing
-const mockElements: Map<string, { tagName: string; props: Record<string, unknown>; children: unknown[] }> = new Map();
-
-function createElement(tagName: string, props: Record<string, unknown> = {}, ...children: unknown[]) {
-  const id = `${tagName}-${Math.random().toString(36).slice(2)}`;
-  mockElements.set(id, { tagName, props, children });
-  return { id, tagName, props, children };
-}
-
-// Reset mock elements before each test
-beforeEach(() => {
-  mockElements.clear();
-});
-
-// ==================== Component Helper Functions ====================
-
-// Helper to simulate component props
 interface SidebarProps {
   onShowSettings: () => void;
   activeView: 'cowork' | 'skills' | 'scheduledTasks' | 'mcp';
@@ -41,7 +27,44 @@ interface SidebarProps {
   updateBadge?: unknown;
 }
 
-// Helper to validate Sidebar props
+interface SettingsProps {
+  theme: 'light' | 'dark' | 'system';
+  language: 'en' | 'zh';
+  onThemeChange: (theme: 'light' | 'dark' | 'system') => void;
+  onLanguageChange: (language: 'en' | 'zh') => void;
+}
+
+interface Skill {
+  id: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  official: boolean;
+}
+
+interface SessionItem {
+  id: string;
+  title: string;
+  status: 'idle' | 'running' | 'completed' | 'error';
+  pinned: boolean;
+  updatedAt: number;
+}
+
+interface Message {
+  id: string;
+  type: 'user' | 'assistant' | 'tool_use' | 'tool_result' | 'system';
+  content: string;
+  timestamp: number;
+  isStreaming?: boolean;
+}
+
+interface SelectionState {
+  selectedIds: Set<string>;
+  isBatchMode: boolean;
+}
+
+// ==================== Sidebar Component Tests ====================
+
 function validateSidebarProps(props: Partial<SidebarProps>): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
@@ -59,19 +82,15 @@ function validateSidebarProps(props: Partial<SidebarProps>): { valid: boolean; e
   };
 }
 
-// Helper to simulate Sidebar rendering logic
 function simulateSidebarRender(props: SidebarProps): { buttons: string[]; collapsed: boolean } {
   const buttons = ['newChat', 'search', 'scheduledTasks', 'skills', 'mcp', 'settings'];
 
-  // If collapsed, fewer elements visible
   if (props.isCollapsed) {
     return { buttons: [], collapsed: true };
   }
 
   return { buttons, collapsed: false };
 }
-
-// ==================== Tests ====================
 
 describe('Sidebar Component Logic', () => {
   it('should validate correct sidebar props', () => {
@@ -150,13 +169,6 @@ describe('Sidebar Component Logic', () => {
 });
 
 // ==================== Settings Component Tests ====================
-
-interface SettingsProps {
-  theme: 'light' | 'dark' | 'system';
-  language: 'en' | 'zh';
-  onThemeChange: (theme: 'light' | 'dark' | 'system') => void;
-  onLanguageChange: (language: 'en' | 'zh') => void;
-}
 
 function validateSettingsProps(props: Partial<SettingsProps>): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
@@ -238,20 +250,6 @@ describe('Settings Component Logic', () => {
 
 // ==================== Skills List Component Tests ====================
 
-interface Skill {
-  id: string;
-  name: string;
-  description: string;
-  enabled: boolean;
-  official: boolean;
-}
-
-interface SkillsListProps {
-  skills: Skill[];
-  onToggle: (skillId: string, enabled: boolean) => void;
-  onConfigure?: (skillId: string) => void;
-}
-
 function filterSkills(skills: Skill[], query: string): Skill[] {
   if (!query) return skills;
   const lowerQuery = query.toLowerCase();
@@ -264,11 +262,9 @@ function filterSkills(skills: Skill[], query: string): Skill[] {
 
 function sortSkills(skills: Skill[]): Skill[] {
   return [...skills].sort((a, b) => {
-    // Official skills first
     if (a.official !== b.official) {
       return a.official ? -1 : 1;
     }
-    // Then alphabetically
     return a.name.localeCompare(b.name);
   });
 }
@@ -335,14 +331,6 @@ describe('Skills List Component Logic', () => {
 });
 
 // ==================== Session Item Component Tests ====================
-
-interface SessionItem {
-  id: string;
-  title: string;
-  status: 'idle' | 'running' | 'completed' | 'error';
-  pinned: boolean;
-  updatedAt: number;
-}
 
 function formatSessionDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -413,7 +401,6 @@ describe('Session Item Component Logic', () => {
       { id: 'u1', title: 'Unpinned', status: 'idle', pinned: false, updatedAt: 3000 },
     ];
     const sorted = sortSessionsByPin(sessionsWithMultiplePinned);
-    // Pinned first, sorted by update time within group
     assert.strictEqual(sorted[0].id, 'p2');
     assert.strictEqual(sorted[1].id, 'p1');
     assert.strictEqual(sorted[2].id, 'u1');
@@ -421,14 +408,6 @@ describe('Session Item Component Logic', () => {
 });
 
 // ==================== Message Component Tests ====================
-
-interface Message {
-  id: string;
-  type: 'user' | 'assistant' | 'tool_use' | 'tool_result' | 'system';
-  content: string;
-  timestamp: number;
-  isStreaming?: boolean;
-}
 
 function getMessageClass(message: Message): string {
   const classes = [`message-${message.type}`];
@@ -511,11 +490,6 @@ describe('Message Component Logic', () => {
 });
 
 // ==================== Batch Selection Tests ====================
-
-interface SelectionState {
-  selectedIds: Set<string>;
-  isBatchMode: boolean;
-}
 
 function toggleSelection(state: SelectionState, id: string): SelectionState {
   const newSelectedIds = new Set(state.selectedIds);
@@ -626,5 +600,170 @@ describe('Search Logic', () => {
   it('should handle whitespace-only query', () => {
     const results = searchSessions(sessions, '   ');
     assert.strictEqual(results.length, 3);
+  });
+});
+
+// ==================== i18n Helper Tests ====================
+
+interface Translations {
+  [key: string]: {
+    en: string;
+    zh: string;
+  };
+}
+
+const sampleTranslations: Translations = {
+  newChat: { en: 'New Chat', zh: '新对话' },
+  settings: { en: 'Settings', zh: '设置' },
+  search: { en: 'Search', zh: '搜索' },
+};
+
+function translate(key: string, language: 'en' | 'zh'): string {
+  const translation = sampleTranslations[key];
+  if (!translation) return key;
+  return translation[language];
+}
+
+describe('i18n Helper Logic', () => {
+  it('should translate to English', () => {
+    assert.strictEqual(translate('newChat', 'en'), 'New Chat');
+    assert.strictEqual(translate('settings', 'en'), 'Settings');
+  });
+
+  it('should translate to Chinese', () => {
+    assert.strictEqual(translate('newChat', 'zh'), '新对话');
+    assert.strictEqual(translate('settings', 'zh'), '设置');
+  });
+
+  it('should return key for missing translation', () => {
+    assert.strictEqual(translate('nonexistent', 'en'), 'nonexistent');
+  });
+});
+
+// ==================== Permission Modal Tests ====================
+
+interface PermissionRequest {
+  toolName: string;
+  toolInput: Record<string, unknown>;
+  riskLevel: 'low' | 'medium' | 'high';
+}
+
+function getRiskLevel(toolName: string): 'low' | 'medium' | 'high' {
+  const highRiskTools = ['execute_command', 'delete_file', 'write_file'];
+  const mediumRiskTools = ['read_file', 'list_directory'];
+
+  if (highRiskTools.includes(toolName)) return 'high';
+  if (mediumRiskTools.includes(toolName)) return 'medium';
+  return 'low';
+}
+
+function formatToolInput(input: Record<string, unknown>): string {
+  return JSON.stringify(input, null, 2);
+}
+
+describe('Permission Modal Logic', () => {
+  it('should identify high risk tools', () => {
+    assert.strictEqual(getRiskLevel('execute_command'), 'high');
+    assert.strictEqual(getRiskLevel('delete_file'), 'high');
+    assert.strictEqual(getRiskLevel('write_file'), 'high');
+  });
+
+  it('should identify medium risk tools', () => {
+    assert.strictEqual(getRiskLevel('read_file'), 'medium');
+    assert.strictEqual(getRiskLevel('list_directory'), 'medium');
+  });
+
+  it('should identify low risk tools', () => {
+    assert.strictEqual(getRiskLevel('search'), 'low');
+    assert.strictEqual(getRiskLevel('unknown_tool'), 'low');
+  });
+
+  it('should format tool input as JSON', () => {
+    const input = { path: '/test/file.txt', encoding: 'utf-8' };
+    const formatted = formatToolInput(input);
+    assert.ok(formatted.includes('"path"'));
+    assert.ok(formatted.includes('/test/file.txt'));
+  });
+});
+
+// ==================== Artifact Detection Tests ====================
+
+interface ArtifactInfo {
+  type: 'html' | 'svg' | 'mermaid' | 'react' | 'code';
+  title?: string;
+  language?: string;
+}
+
+function detectArtifactType(code: string, language?: string): ArtifactInfo | null {
+  // Check for explicit artifact markers
+  const artifactMatch = code.match(/```artifact:(\w+)\s*(?:title="([^"]+)")?/);
+  if (artifactMatch) {
+    return {
+      type: artifactMatch[1] as ArtifactInfo['type'],
+      title: artifactMatch[2],
+    };
+  }
+
+  // Heuristic detection
+  if (language === 'html' || code.includes('<!DOCTYPE html>') || code.includes('<html')) {
+    return { type: 'html', language: 'html' };
+  }
+
+  if (language === 'svg' || code.includes('<svg')) {
+    return { type: 'svg', language: 'svg' };
+  }
+
+  if (language === 'mermaid' || code.includes('graph ') || code.includes('sequenceDiagram')) {
+    return { type: 'mermaid', language: 'mermaid' };
+  }
+
+  if (language === 'jsx' || language === 'tsx' || code.includes('React') || code.includes('export default')) {
+    return { type: 'react', language: language || 'jsx' };
+  }
+
+  return null;
+}
+
+describe('Artifact Detection Logic', () => {
+  it('should detect explicit artifact markers', () => {
+    const code = '```artifact:html title="My Page"\n<div>Hello</div>\n```';
+    const result = detectArtifactType(code);
+    assert.ok(result);
+    assert.strictEqual(result.type, 'html');
+    assert.strictEqual(result.title, 'My Page');
+  });
+
+  it('should detect HTML by content', () => {
+    const code = '<!DOCTYPE html><html><body>Hello</body></html>';
+    const result = detectArtifactType(code);
+    assert.ok(result);
+    assert.strictEqual(result.type, 'html');
+  });
+
+  it('should detect SVG by content', () => {
+    const code = '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40"/></svg>';
+    const result = detectArtifactType(code);
+    assert.ok(result);
+    assert.strictEqual(result.type, 'svg');
+  });
+
+  it('should detect Mermaid by content', () => {
+    const code = 'graph TD\n  A --> B';
+    const result = detectArtifactType(code);
+    assert.ok(result);
+    assert.strictEqual(result.type, 'mermaid');
+  });
+
+  it('should detect React by language', () => {
+    const code = 'export default function App() { return <div>Hello</div> }';
+    const result = detectArtifactType(code, 'jsx');
+    assert.ok(result);
+    assert.strictEqual(result.type, 'react');
+  });
+
+  it('should return null for non-artifact code', () => {
+    const code = 'const x = 42;';
+    const result = detectArtifactType(code, 'javascript');
+    assert.strictEqual(result, null);
   });
 });

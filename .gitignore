@@ -41,3 +41,5 @@ nul
 
 # editorconfig files
 .vscode/
+# Web build output
+dist-web/

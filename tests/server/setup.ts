@@ -11,30 +11,33 @@ const fs = require('fs');
 const os = require('os');
 const { WebSocketServer } = require('ws');
 
-// Use require for CommonJS modules since they don't have ESM exports
-const { SqliteStore } = require('../../dist-electron/sqliteStore.js');
-const { CoworkStore } = require('../../dist-electron/coworkStore.js');
-const { CoworkRunner } = require('../../dist-electron/libs/coworkRunner.js');
-const { SkillManager } = require('../../dist-electron/skillManager.js');
-const { McpStore } = require('../../dist-electron/mcpStore.js');
-const { IMGatewayManager } = require('../../dist-electron/im/index.js');
-const { ScheduledTaskStore } = require('../../dist-electron/scheduledTaskStore.js');
-const { Scheduler } = require('../../dist-electron/libs/scheduler.js');
-const { initLogger } = require('../../dist-electron/logger.js');
+// Get the project root directory
+const projectRoot = path.resolve(__dirname, '..', '..');
 
-// Import route setup functions using require
-const { setupStoreRoutes } = require('../../server/routes/store.js');
-const { setupSkillsRoutes } = require('../../server/routes/skills.js');
-const { setupMcpRoutes } = require('../../server/routes/mcp.js');
-const { setupCoworkRoutes } = require('../../server/routes/cowork.js');
-const { setupImRoutes } = require('../../server/routes/im.js');
-const { setupScheduledTaskRoutes } = require('../../server/routes/scheduledTasks.js');
-const { setupPermissionsRoutes } = require('../../server/routes/permissions.js');
-const { setupAppRoutes } = require('../../server/routes/app.js');
-const { setupLogRoutes } = require('../../server/routes/log.js');
-const { setupApiProxyRoutes } = require('../../server/routes/apiProxy.js');
-const { setupDialogRoutes } = require('../../server/routes/dialog.js');
-const { setupShellRoutes } = require('../../server/routes/shell.js');
+// Use require for CommonJS modules since they don't have ESM exports
+const { SqliteStore } = require(path.join(projectRoot, 'dist-electron', 'sqliteStore.js'));
+const { CoworkStore } = require(path.join(projectRoot, 'dist-electron', 'coworkStore.js'));
+const { CoworkRunner } = require(path.join(projectRoot, 'dist-electron', 'libs', 'coworkRunner.js'));
+const { SkillManager } = require(path.join(projectRoot, 'dist-electron', 'skillManager.js'));
+const { McpStore } = require(path.join(projectRoot, 'dist-electron', 'mcpStore.js'));
+const { IMGatewayManager } = require(path.join(projectRoot, 'dist-electron', 'im', 'index.js'));
+const { ScheduledTaskStore } = require(path.join(projectRoot, 'dist-electron', 'scheduledTaskStore.js'));
+const { Scheduler } = require(path.join(projectRoot, 'dist-electron', 'libs', 'scheduler.js'));
+const { initLogger } = require(path.join(projectRoot, 'dist-electron', 'logger.js'));
+
+// Import route setup functions using require with absolute paths
+const { setupStoreRoutes } = require(path.join(projectRoot, 'server', 'routes', 'store'));
+const { setupSkillsRoutes } = require(path.join(projectRoot, 'server', 'routes', 'skills'));
+const { setupMcpRoutes } = require(path.join(projectRoot, 'server', 'routes', 'mcp'));
+const { setupCoworkRoutes } = require(path.join(projectRoot, 'server', 'routes', 'cowork'));
+const { setupImRoutes } = require(path.join(projectRoot, 'server', 'routes', 'im'));
+const { setupScheduledTaskRoutes } = require(path.join(projectRoot, 'server', 'routes', 'scheduledTasks'));
+const { setupPermissionsRoutes } = require(path.join(projectRoot, 'server', 'routes', 'permissions'));
+const { setupAppRoutes } = require(path.join(projectRoot, 'server', 'routes', 'app'));
+const { setupLogRoutes } = require(path.join(projectRoot, 'server', 'routes', 'log'));
+const { setupApiProxyRoutes } = require(path.join(projectRoot, 'server', 'routes', 'apiProxy'));
+const { setupDialogRoutes } = require(path.join(projectRoot, 'server', 'routes', 'dialog'));
+const { setupShellRoutes } = require(path.join(projectRoot, 'server', 'routes', 'shell'));
 
 // Initialize logger
 initLogger();

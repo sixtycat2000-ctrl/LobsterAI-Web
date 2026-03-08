@@ -509,6 +509,10 @@ declare global {
 }
 
 // Start server if this file is run directly
-if (require.main === module) {
+// Use import.meta.url check for ESM compatibility
+const isMainModule = typeof require !== 'undefined' && require.main === module
+  || (typeof import.meta !== 'undefined' && import.meta.url === `file://${process.argv[1]}`);
+
+if (isMainModule) {
   startServer();
 }
