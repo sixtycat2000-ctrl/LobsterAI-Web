@@ -43,3 +43,11 @@ nul
 .vscode/
 # Web build output
 dist-web/
+
+# Compiled TypeScript from src/main (when running server tests)
+src/main/*.js
+src/main/*.js.map
+src/main/**/*.js
+src/main/**/*.js.map
+src/renderer/types/*.js
+src/renderer/types/*.js.map

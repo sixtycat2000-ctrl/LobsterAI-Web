@@ -4,15 +4,20 @@
  */
 
 const http = require('node:http');
-const express = require('express');
-const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const { WebSocketServer } = require('ws');
+
+// Use tsx to load TypeScript modules
+const tsx = require('tsx/cjs/api');
 
 // Get the project root directory
 const projectRoot = path.resolve(__dirname, '..', '..');
+
+// Load ESM modules via tsx
+const express = tsx.require(path.join(projectRoot, 'node_modules', 'express', 'index.js'), __dirname).default || tsx.require(path.join(projectRoot, 'node_modules', 'express'), __dirname);
+const cors = tsx.require(path.join(projectRoot, 'node_modules', 'cors'), __dirname);
+const { WebSocketServer } = tsx.require(path.join(projectRoot, 'node_modules', 'ws'), __dirname);
 
 // Use require for CommonJS modules since they don't have ESM exports
 const { SqliteStore } = require(path.join(projectRoot, 'dist-electron', 'sqliteStore.js'));
@@ -25,19 +30,19 @@ const { ScheduledTaskStore } = require(path.join(projectRoot, 'dist-electron', '
 const { Scheduler } = require(path.join(projectRoot, 'dist-electron', 'libs', 'scheduler.js'));
 const { initLogger } = require(path.join(projectRoot, 'dist-electron', 'logger.js'));
 
-// Import route setup functions using require with absolute paths
-const { setupStoreRoutes } = require(path.join(projectRoot, 'server', 'routes', 'store'));
-const { setupSkillsRoutes } = require(path.join(projectRoot, 'server', 'routes', 'skills'));
-const { setupMcpRoutes } = require(path.join(projectRoot, 'server', 'routes', 'mcp'));
-const { setupCoworkRoutes } = require(path.join(projectRoot, 'server', 'routes', 'cowork'));
-const { setupImRoutes } = require(path.join(projectRoot, 'server', 'routes', 'im'));
-const { setupScheduledTaskRoutes } = require(path.join(projectRoot, 'server', 'routes', 'scheduledTasks'));
-const { setupPermissionsRoutes } = require(path.join(projectRoot, 'server', 'routes', 'permissions'));
-const { setupAppRoutes } = require(path.join(projectRoot, 'server', 'routes', 'app'));
-const { setupLogRoutes } = require(path.join(projectRoot, 'server', 'routes', 'log'));
-const { setupApiProxyRoutes } = require(path.join(projectRoot, 'server', 'routes', 'apiProxy'));
-const { setupDialogRoutes } = require(path.join(projectRoot, 'server', 'routes', 'dialog'));
-const { setupShellRoutes } = require(path.join(projectRoot, 'server', 'routes', 'shell'));
+// Import route setup functions using tsx for TypeScript files
+const { setupStoreRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'store.ts'), __dirname);
+const { setupSkillsRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'skills.ts'), __dirname);
+const { setupMcpRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'mcp.ts'), __dirname);
+const { setupCoworkRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'cowork.ts'), __dirname);
+const { setupImRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'im.ts'), __dirname);
+const { setupScheduledTaskRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'scheduledTasks.ts'), __dirname);
+const { setupPermissionsRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'permissions.ts'), __dirname);
+const { setupAppRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'app.ts'), __dirname);
+const { setupLogRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'log.ts'), __dirname);
+const { setupApiProxyRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'apiProxy.ts'), __dirname);
+const { setupDialogRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'dialog.ts'), __dirname);
+const { setupShellRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'shell.ts'), __dirname);
 
 // Initialize logger
 initLogger();
