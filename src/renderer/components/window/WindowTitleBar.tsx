@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { isWebBuild, isWindows } from '../../utils/platform';
 
 interface WindowTitleBarProps {
   isOverlayActive?: boolean;
@@ -26,6 +27,9 @@ const WindowTitleBar: React.FC<WindowTitleBarProps> = ({
   const [state, setState] = useState<WindowState>(DEFAULT_STATE);
 
   useEffect(() => {
+    // Don't initialize window controls in web build
+    if (isWebBuild()) return;
+
     let disposed = false;
     window.electron.window.isMaximized().then((isMaximized) => {
       if (!disposed) {
@@ -71,7 +75,8 @@ const WindowTitleBar: React.FC<WindowTitleBarProps> = ({
     }
   };
 
-  if (window.electron.platform !== 'win32') {
+  // Window title bar is only for Windows Electron builds
+  if (isWebBuild() || !isWindows()) {
     return null;
   }
 

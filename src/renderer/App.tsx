@@ -27,6 +27,7 @@ import { i18nService } from './services/i18n';
 import { matchesShortcut } from './services/shortcuts';
 import AppUpdateBadge from './components/update/AppUpdateBadge';
 import AppUpdateModal from './components/update/AppUpdateModal';
+import { isWebBuild, isWindows, hasAppUpdate } from './utils/platform';
 
 const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
@@ -49,7 +50,6 @@ const App: React.FC = () => {
   const currentSessionId = useSelector((state: RootState) => state.cowork.currentSessionId);
   const pendingPermissions = useSelector((state: RootState) => state.cowork.pendingPermissions);
   const pendingPermission = pendingPermissions[0] ?? null;
-  const isWindows = window.electron.platform === 'win32';
 
   // 初始化应用
   useEffect(() => {
@@ -61,7 +61,8 @@ const App: React.FC = () => {
     const initializeApp = async () => {
       try {
         // 标记平台，用于 CSS 条件样式（如 Windows 标题栏按钮区域留白）
-        document.documentElement.classList.add(`platform-${window.electron.platform}`);
+        const platform = isWebBuild() ? 'web' : window.electron.platform;
+        document.documentElement.classList.add(`platform-${platform}`);
 
         // 初始化配置
         await configService.init();
@@ -264,6 +265,13 @@ const App: React.FC = () => {
   const handleConfirmUpdate = useCallback(async () => {
     if (!updateInfo) return;
 
+    // In web build, just refresh the page to get updates
+    if (isWebBuild()) {
+      setShowUpdateModal(false);
+      window.location.reload();
+      return;
+    }
+
     // If the URL is a fallback page (not a direct file download), open in browser
     if (updateInfo.url.includes('#') || updateInfo.url.endsWith('/download-list')) {
       setShowUpdateModal(false);
@@ -322,6 +330,11 @@ const App: React.FC = () => {
   }, [updateInfo, showToast]);
 
   const handleCancelDownload = useCallback(async () => {
+    if (isWebBuild()) {
+      setUpdateModalState('info');
+      setDownloadProgress(null);
+      return;
+    }
     await window.electron.appUpdate.cancelDownload();
     setUpdateModalState('info');
     setDownloadProgress(null);
@@ -452,8 +465,9 @@ const App: React.FC = () => {
     return () => window.removeEventListener('scheduledTask:viewSession', handleViewSession);
   }, []);
 
+  // Skip update checks in web build
   useEffect(() => {
-    if (!isInitialized) return;
+    if (!isInitialized || isWebBuild()) return;
 
     let cancelled = false;
     let lastCheckTime = 0;
@@ -519,13 +533,13 @@ const App: React.FC = () => {
   }, [pendingPermission, handlePermissionResponse]);
 
   const isOverlayActive = showSettings || showUpdateModal || pendingPermissions.length > 0;
-  const updateBadge = updateInfo ? (
+  const updateBadge = updateInfo && hasAppUpdate() ? (
     <AppUpdateBadge
       latestVersion={updateInfo.latestVersion}
       onClick={handleOpenUpdateModal}
     />
   ) : null;
-  const windowsStandaloneTitleBar = isWindows ? (
+  const windowsStandaloneTitleBar = isWindows() ? (
     <div className="draggable relative h-9 shrink-0 dark:bg-claude-darkSurfaceMuted bg-claude-surfaceMuted">
       <WindowTitleBar isOverlayActive={isOverlayActive} />
     </div>

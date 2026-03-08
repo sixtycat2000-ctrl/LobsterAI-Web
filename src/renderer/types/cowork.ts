@@ -5,6 +5,9 @@ export interface CoworkImageAttachment {
   base64Data: string;
 }
 
+// Cowork session ID type
+export type CoworkSessionId = string;
+
 // Cowork session status
 export type CoworkSessionStatus = 'idle' | 'running' | 'completed' | 'error';
 

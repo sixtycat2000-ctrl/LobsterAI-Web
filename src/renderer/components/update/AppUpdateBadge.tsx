@@ -7,6 +7,7 @@ interface AppUpdateBadgeProps {
 }
 
 const AppUpdateBadge: React.FC<AppUpdateBadgeProps> = ({ latestVersion, onClick }) => {
+  // In web build, show badge but it will open a simple info modal
   return (
     <button
       type="button"

@@ -78,3 +78,9 @@ export type McpCategory =
   | 'productivity'
   | 'design'
   | 'data-api';
+
+// Marketplace data response type
+export interface McpMarketplaceData {
+  servers: McpMarketplaceServer[];
+  categories: McpMarketplaceCategoryInfo[];
+}

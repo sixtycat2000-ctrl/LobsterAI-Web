@@ -1,5 +1,6 @@
 import React from 'react';
 import { i18nService } from '../../services/i18n';
+import { isWebBuild } from '../../utils/platform';
 import type { AppUpdateInfo, AppUpdateDownloadProgress } from '../../services/appUpdate';
 
 export type UpdateModalState = 'info' | 'downloading' | 'installing' | 'error';
@@ -36,15 +37,20 @@ const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
   onCancelDownload,
   onRetry,
 }) => {
-  const { latestVersion, date, changeLog } = updateInfo;
+  const { latestVersion, date, changeLog, url: _url } = updateInfo;
   const lang = i18nService.getLanguage();
   const currentLog = changeLog?.[lang] ?? { title: '', content: [] };
   const isDismissible = modalState === 'info' || modalState === 'error';
+  const isWeb = isWebBuild();
 
   const handleBackdropClick = () => {
     if (isDismissible) {
       onCancel();
     }
+  };
+
+  const handleRefreshPage = () => {
+    window.location.reload();
   };
 
   return (
@@ -83,6 +89,13 @@ const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
                   ))}
                 </ul>
               )}
+
+              {/* Web-specific message */}
+              {isWeb && (
+                <p className="mt-3 text-xs dark:text-claude-darkTextSecondary text-claude-textSecondary italic">
+                  Refresh the page to get the latest version.
+                </p>
+              )}
             </div>
 
             <div className="px-5 pb-5 flex items-center justify-end gap-2">
@@ -93,19 +106,29 @@ const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
               >
                 {i18nService.t('updateAvailableCancel')}
               </button>
-              <button
-                type="button"
-                onClick={onConfirm}
-                className="px-3 py-1.5 text-sm rounded-lg bg-claude-accent text-white hover:bg-claude-accentHover transition-colors"
-              >
-                {i18nService.t('updateAvailableConfirm')}
-              </button>
+              {isWeb ? (
+                <button
+                  type="button"
+                  onClick={handleRefreshPage}
+                  className="px-3 py-1.5 text-sm rounded-lg bg-claude-accent text-white hover:bg-claude-accentHover transition-colors"
+                >
+                  Refresh Page
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onConfirm}
+                  className="px-3 py-1.5 text-sm rounded-lg bg-claude-accent text-white hover:bg-claude-accentHover transition-colors"
+                >
+                  {i18nService.t('updateAvailableConfirm')}
+                </button>
+              )}
             </div>
           </>
         )}
 
-        {/* Downloading state - progress bar with cancel */}
-        {modalState === 'downloading' && (
+        {/* Downloading state - progress bar with cancel (Electron only) */}
+        {modalState === 'downloading' && !isWeb && (
           <div className="px-5 py-5">
             <h3 className="text-base font-semibold dark:text-claude-darkText text-claude-text">
               {i18nService.t('updateDownloading')}
@@ -159,8 +182,8 @@ const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
           </div>
         )}
 
-        {/* Installing state - spinner, no buttons */}
-        {modalState === 'installing' && (
+        {/* Installing state - spinner, no buttons (Electron only) */}
+        {modalState === 'installing' && !isWeb && (
           <div className="px-5 py-5">
             <div className="flex flex-col items-center py-4">
               <svg
@@ -196,6 +219,12 @@ const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
               </p>
             )}
 
+            {isWeb && (
+              <p className="mt-2 text-xs dark:text-claude-darkTextSecondary text-claude-textSecondary">
+                Try refreshing the page to get the latest version.
+              </p>
+            )}
+
             <div className="mt-4 flex items-center justify-end gap-2">
               <button
                 type="button"
@@ -204,13 +233,23 @@ const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
               >
                 {i18nService.t('updateAvailableCancel')}
               </button>
-              <button
-                type="button"
-                onClick={onRetry}
-                className="px-3 py-1.5 text-sm rounded-lg bg-claude-accent text-white hover:bg-claude-accentHover transition-colors"
-              >
-                {i18nService.t('updateRetry')}
-              </button>
+              {isWeb ? (
+                <button
+                  type="button"
+                  onClick={handleRefreshPage}
+                  className="px-3 py-1.5 text-sm rounded-lg bg-claude-accent text-white hover:bg-claude-accentHover transition-colors"
+                >
+                  Refresh Page
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="px-3 py-1.5 text-sm rounded-lg bg-claude-accent text-white hover:bg-claude-accentHover transition-colors"
+                >
+                  {i18nService.t('updateRetry')}
+                </button>
+              )}
             </div>
           </div>
         )}

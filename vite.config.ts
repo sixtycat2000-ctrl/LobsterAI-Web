@@ -1,3 +1,8 @@
+/**
+ * Vite Config
+ * Supports both Electron (default) and web builds via --config vite.config.web.ts
+ */
+
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import electron from 'vite-plugin-electron';
@@ -6,12 +11,15 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 const devPort = 5175;
-const katexVersion = process.env.npm_package_dependencies_katex?.replace(/^[~^]/, '') || '0.16.0';
+const katexVersion = process.env.npm_package_dependencies_katex?.replace(/^[~^]/, '') || '0.16.10';
 
 export default defineConfig({
   define: {
     // KaTeX ESM bundle references this compile-time constant.
     __VERSION__: JSON.stringify(katexVersion),
+    // Build mode constants
+    __WEB_BUILD__: 'false',
+    __ELECTRON_BUILD__: 'true',
   },
   plugins: [
     react(),

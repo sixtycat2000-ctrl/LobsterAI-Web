@@ -46,6 +46,7 @@ import {
   OllamaIcon,
   CustomProviderIcon,
 } from './icons/providers';
+import { hasAutoLaunch, hasExportLogs } from '../utils/platform';
 
 type TabType = 'general' | 'model' | 'coworkSandbox' | 'coworkMemory' | 'shortcuts' | 'im' | 'email' | 'about';
 
@@ -1847,54 +1848,56 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice, onUpda
               </div>
             </div>
 
-            {/* Auto-launch Section */}
-            <div>
-              <h4 className="text-sm font-medium dark:text-claude-darkText text-claude-text mb-3">
-                {i18nService.t('autoLaunch')}
-              </h4>
-              <label className="flex items-center justify-between cursor-pointer">
-                <span className="text-sm dark:text-claude-darkSecondaryText text-claude-secondaryText">
-                  {i18nService.t('autoLaunchDescription')}
-                </span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={autoLaunch}
-                  onClick={async () => {
-                    if (isUpdatingAutoLaunch) return;
-                    const next = !autoLaunch;
-                    setIsUpdatingAutoLaunch(true);
-                    try {
-                      const result = await window.electron.autoLaunch.set(next);
-                      if (result.success) {
-                        setAutoLaunchState(next);
-                      } else {
-                        setError(result.error || 'Failed to update auto-launch setting');
+            {/* Auto-launch Section (Electron only) */}
+            {hasAutoLaunch() && (
+              <div>
+                <h4 className="text-sm font-medium dark:text-claude-darkText text-claude-text mb-3">
+                  {i18nService.t('autoLaunch')}
+                </h4>
+                <label className="flex items-center justify-between cursor-pointer">
+                  <span className="text-sm dark:text-claude-darkSecondaryText text-claude-secondaryText">
+                    {i18nService.t('autoLaunchDescription')}
+                  </span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={autoLaunch}
+                    onClick={async () => {
+                      if (isUpdatingAutoLaunch) return;
+                      const next = !autoLaunch;
+                      setIsUpdatingAutoLaunch(true);
+                      try {
+                        const result = await window.electron.autoLaunch.set(next);
+                        if (result.success) {
+                          setAutoLaunchState(next);
+                        } else {
+                          setError(result.error || 'Failed to update auto-launch setting');
+                        }
+                      } catch (err) {
+                        console.error('Failed to set auto-launch:', err);
+                        setError('Failed to update auto-launch setting');
+                      } finally {
+                        setIsUpdatingAutoLaunch(false);
                       }
-                    } catch (err) {
-                      console.error('Failed to set auto-launch:', err);
-                      setError('Failed to update auto-launch setting');
-                    } finally {
-                      setIsUpdatingAutoLaunch(false);
-                    }
-                  }}
-                  disabled={isUpdatingAutoLaunch}
-                  className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors ${
-                    isUpdatingAutoLaunch ? 'opacity-50 cursor-not-allowed' : ''
-                  } ${
-                    autoLaunch
-                      ? 'bg-claude-accent'
-                      : 'bg-gray-300 dark:bg-gray-600'
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      autoLaunch ? 'translate-x-6' : 'translate-x-1'
+                    }}
+                    disabled={isUpdatingAutoLaunch}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors ${
+                      isUpdatingAutoLaunch ? 'opacity-50 cursor-not-allowed' : ''
+                    } ${
+                      autoLaunch
+                        ? 'bg-claude-accent'
+                        : 'bg-gray-300 dark:bg-gray-600'
                     }`}
-                  />
-                </button>
-              </label>
-            </div>
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        autoLaunch ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </label>
+              </div>
+            )}
 
             {/* System proxy Section */}
             <div>
@@ -2924,18 +2927,22 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice, onUpda
                 >
                   {i18nService.t('aboutServiceTerms')}
                 </button>
-                <span className="mx-3 text-xs opacity-40">|</span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    void handleExportLogs();
-                  }}
-                  disabled={isExportingLogs}
-                  className="bg-transparent border-none appearance-none px-1.5 py-0.5 -mx-1.5 -my-0.5 rounded-md cursor-pointer hover:text-claude-accent dark:hover:text-claude-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isExportingLogs ? i18nService.t('aboutExportingLogs') : i18nService.t('aboutExportLogs')}
-                </button>
+                {hasExportLogs() && (
+                  <>
+                    <span className="mx-3 text-xs opacity-40">|</span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void handleExportLogs();
+                      }}
+                      disabled={isExportingLogs}
+                      className="bg-transparent border-none appearance-none px-1.5 py-0.5 -mx-1.5 -my-0.5 rounded-md cursor-pointer hover:text-claude-accent dark:hover:text-claude-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isExportingLogs ? i18nService.t('aboutExportingLogs') : i18nService.t('aboutExportLogs')}
+                    </button>
+                  </>
+                )}
               </div>
 
               <p className="mt-5 text-xs dark:text-claude-darkTextSecondary text-claude-textSecondary">
