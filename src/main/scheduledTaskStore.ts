@@ -35,7 +35,7 @@ export interface ScheduledTask {
   prompt: string;
   workingDirectory: string;
   systemPrompt: string;
-  executionMode: 'auto' | 'local' | 'sandbox';
+  executionMode: 'auto' | 'local';
   expiresAt: string | null;
   notifyPlatforms: NotifyPlatform[];
   state: TaskState;
@@ -62,7 +62,7 @@ export interface ScheduledTaskInput {
   prompt: string;
   workingDirectory: string;
   systemPrompt: string;
-  executionMode: 'auto' | 'local' | 'sandbox';
+  executionMode: 'auto' | 'local';
   expiresAt: string | null;
   notifyPlatforms: NotifyPlatform[];
   enabled: boolean;
@@ -519,7 +519,7 @@ export class ScheduledTaskStore {
       prompt: row.prompt,
       workingDirectory: row.working_directory,
       systemPrompt: row.system_prompt,
-      executionMode: row.execution_mode as 'auto' | 'local' | 'sandbox',
+      executionMode: row.execution_mode as 'auto' | 'local',
       expiresAt: row.expires_at,
       notifyPlatforms,
       state: {

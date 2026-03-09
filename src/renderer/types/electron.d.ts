@@ -23,7 +23,7 @@ interface CoworkSession {
   pinned: boolean;
   cwd: string;
   systemPrompt: string;
-  executionMode: 'auto' | 'local' | 'sandbox';
+  executionMode: 'auto' | 'local';
   activeSkillIds: string[];
   messages: CoworkMessage[];
   createdAt: number;
@@ -50,7 +50,7 @@ interface CoworkSessionSummary {
 interface CoworkConfig {
   workingDirectory: string;
   systemPrompt: string;
-  executionMode: 'auto' | 'local' | 'sandbox';
+  executionMode: 'auto' | 'local';
   memoryEnabled: boolean;
   memoryImplicitUpdateEnabled: boolean;
   memoryLlmJudgeEnabled: boolean;
@@ -102,23 +102,6 @@ interface CoworkApiConfig {
   baseURL: string;
   model: string;
   apiType?: 'anthropic' | 'openai';
-}
-
-interface CoworkSandboxStatus {
-  supported: boolean;
-  runtimeReady: boolean;
-  imageReady: boolean;
-  downloading: boolean;
-  progress?: CoworkSandboxProgress;
-  error?: string | null;
-}
-
-interface CoworkSandboxProgress {
-  stage: 'runtime' | 'image';
-  received: number;
-  total?: number;
-  percent?: number;
-  url?: string;
 }
 
 interface AppUpdateDownloadProgress {
@@ -332,9 +315,6 @@ interface IElectronAPI {
     }) => Promise<{ success: boolean; entry?: CoworkUserMemoryEntry; error?: string }>;
     deleteMemoryEntry: (input: { id: string }) => Promise<{ success: boolean; error?: string }>;
     getMemoryStats: () => Promise<{ success: boolean; stats?: CoworkMemoryStats; error?: string }>;
-    getSandboxStatus: () => Promise<CoworkSandboxStatus>;
-    installSandbox: () => Promise<{ success: boolean; status: CoworkSandboxStatus; error?: string }>;
-    onSandboxDownloadProgress: (callback: (data: CoworkSandboxProgress) => void) => () => void;
     onStreamMessage: (callback: (data: { sessionId: string; message: CoworkMessage }) => void) => () => void;
     onStreamMessageUpdate: (callback: (data: { sessionId: string; messageId: string; content: string }) => void) => () => void;
     onStreamPermission: (callback: (data: { sessionId: string; request: CoworkPermissionRequest }) => void) => () => void;
@@ -377,19 +357,6 @@ interface IElectronAPI {
       error?: string;
     }>;
   };
-  im: {
-    getConfig: () => Promise<{ success: boolean; config?: IMGatewayConfig; error?: string }>;
-    setConfig: (config: Partial<IMGatewayConfig>) => Promise<{ success: boolean; error?: string }>;
-    startGateway: (platform: 'dingtalk' | 'feishu' | 'qq' | 'telegram' | 'discord' | 'nim' | 'xiaomifeng' | 'wecom') => Promise<{ success: boolean; error?: string }>;
-    stopGateway: (platform: 'dingtalk' | 'feishu' | 'qq' | 'telegram' | 'discord' | 'nim' | 'xiaomifeng' | 'wecom') => Promise<{ success: boolean; error?: string }>;
-    testGateway: (
-      platform: 'dingtalk' | 'feishu' | 'qq' | 'telegram' | 'discord' | 'nim' | 'xiaomifeng' | 'wecom',
-      configOverride?: Partial<IMGatewayConfig>
-    ) => Promise<{ success: boolean; result?: IMConnectivityTestResult; error?: string }>;
-    getStatus: () => Promise<{ success: boolean; status?: IMGatewayStatus; error?: string }>;
-    onStatusChange: (callback: (status: IMGatewayStatus) => void) => () => void;
-    onMessageReceived: (callback: (message: IMMessage) => void) => () => void;
-  };
   scheduledTasks: {
     list: () => Promise<any>;
     get: (id: string) => Promise<any>;
@@ -412,221 +379,6 @@ interface IElectronAPI {
   networkStatus: {
     send: (status: 'online' | 'offline') => void;
   };
-}
-
-// IM Gateway types
-interface IMGatewayConfig {
-  dingtalk: DingTalkConfig;
-  feishu: FeishuConfig;
-  qq: QQConfig;
-  telegram: TelegramConfig;
-  discord: DiscordConfig;
-  nim: NimConfig;
-  xiaomifeng: XiaomifengConfig;
-  wecom: WecomConfig;
-  settings: IMSettings;
-}
-
-interface DingTalkConfig {
-  enabled: boolean;
-  clientId: string;
-  clientSecret: string;
-  robotCode?: string;
-  corpId?: string;
-  agentId?: string;
-  messageType: 'markdown' | 'card';
-  cardTemplateId?: string;
-  debug?: boolean;
-}
-
-interface FeishuConfig {
-  enabled: boolean;
-  appId: string;
-  appSecret: string;
-  domain: 'feishu' | 'lark' | string;
-  encryptKey?: string;
-  verificationToken?: string;
-  renderMode: 'text' | 'card';
-  debug?: boolean;
-}
-
-interface TelegramConfig {
-  enabled: boolean;
-  botToken: string;
-  debug?: boolean;
-}
-
-interface DiscordConfig {
-  enabled: boolean;
-  botToken: string;
-  debug?: boolean;
-}
-
-interface NimConfig {
-  enabled: boolean;
-  appKey: string;
-  account: string;
-  token: string;
-  accountWhitelist: string;
-  debug?: boolean;
-  // 群组消息配置
-  teamPolicy?: 'open' | 'allowlist' | 'disabled';
-  teamAllowlist?: string;
-  // QChat 圈组配置
-  qchatEnabled?: boolean;
-  qchatServerIds?: string;
-}
-
-interface XiaomifengConfig {
-  enabled: boolean;
-  clientId: string;
-  secret: string;
-  debug?: boolean;
-}
-
-interface QQConfig {
-  enabled: boolean;
-  appId: string;
-  appSecret: string;
-  debug?: boolean;
-}
-
-interface WecomConfig {
-  enabled: boolean;
-  botId: string;
-  secret: string;
-  debug?: boolean;
-}
-
-interface IMSettings {
-  systemPrompt?: string;
-  skillsEnabled: boolean;
-}
-
-interface IMGatewayStatus {
-  dingtalk: DingTalkGatewayStatus;
-  feishu: FeishuGatewayStatus;
-  qq: QQGatewayStatus;
-  telegram: TelegramGatewayStatus;
-  discord: DiscordGatewayStatus;
-  nim: NimGatewayStatus;
-  xiaomifeng: XiaomifengGatewayStatus;
-  wecom: WecomGatewayStatus;
-}
-
-type IMConnectivityVerdict = 'pass' | 'warn' | 'fail';
-
-type IMConnectivityCheckLevel = 'pass' | 'info' | 'warn' | 'fail';
-
-type IMConnectivityCheckCode =
-  | 'missing_credentials'
-  | 'auth_check'
-  | 'gateway_running'
-  | 'inbound_activity'
-  | 'outbound_activity'
-  | 'platform_last_error'
-  | 'feishu_group_requires_mention'
-  | 'feishu_event_subscription_required'
-  | 'discord_group_requires_mention'
-  | 'telegram_privacy_mode_hint'
-  | 'dingtalk_bot_membership_hint'
-  | 'nim_p2p_only_hint'
-  | 'qq_guild_mention_hint';
-
-interface IMConnectivityCheck {
-  code: IMConnectivityCheckCode;
-  level: IMConnectivityCheckLevel;
-  message: string;
-  suggestion?: string;
-}
-
-interface IMConnectivityTestResult {
-  platform: 'dingtalk' | 'feishu' | 'qq' | 'telegram' | 'discord' | 'nim' | 'xiaomifeng' | 'wecom';
-  testedAt: number;
-  verdict: IMConnectivityVerdict;
-  checks: IMConnectivityCheck[];
-}
-
-interface DingTalkGatewayStatus {
-  connected: boolean;
-  startedAt: number | null;
-  lastError: string | null;
-  lastInboundAt: number | null;
-  lastOutboundAt: number | null;
-}
-
-interface FeishuGatewayStatus {
-  connected: boolean;
-  startedAt: string | null;
-  botOpenId: string | null;
-  error: string | null;
-  lastInboundAt: number | null;
-  lastOutboundAt: number | null;
-}
-
-interface TelegramGatewayStatus {
-  connected: boolean;
-  startedAt: number | null;
-  lastError: string | null;
-  botUsername: string | null;
-  lastInboundAt: number | null;
-  lastOutboundAt: number | null;
-}
-
-interface DiscordGatewayStatus {
-  connected: boolean;
-  starting: boolean;
-  startedAt: number | null;
-  lastError: string | null;
-  botUsername: string | null;
-  lastInboundAt: number | null;
-  lastOutboundAt: number | null;
-}
-
-interface NimGatewayStatus {
-  connected: boolean;
-  startedAt: number | null;
-  lastError: string | null;
-  botAccount: string | null;
-  lastInboundAt: number | null;
-  lastOutboundAt: number | null;
-}
-
-interface XiaomifengGatewayStatus {
-  connected: boolean;
-  startedAt: number | null;
-  lastError: string | null;
-  botAccount: string | null;
-  lastInboundAt: number | null;
-  lastOutboundAt: number | null;
-}
-
-interface QQGatewayStatus {
-  connected: boolean;
-  startedAt: number | null;
-  lastError: string | null;
-  lastInboundAt: number | null;
-  lastOutboundAt: number | null;
-}
-
-interface WecomGatewayStatus {
-  connected: boolean;
-  startedAt: number | null;
-  lastError: string | null;
-  botId: string | null;
-  lastInboundAt: number | null;
-  lastOutboundAt: number | null;
-}
-
-interface IMMessage {
-  platform: 'dingtalk' | 'feishu' | 'qq' | 'telegram' | 'discord' | 'nim' | 'xiaomifeng' | 'wecom';
-  messageId: string;
-  conversationId: string;
-  senderId: string;
-  senderName?: string;
-  content: string;
-  chatType: 'direct' | 'group';
-  timestamp: number;
 }
 
 declare global {

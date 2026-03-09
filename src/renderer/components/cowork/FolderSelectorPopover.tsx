@@ -6,6 +6,7 @@ import FolderIcon from '../icons/FolderIcon';
 import { i18nService } from '../../services/i18n';
 import { coworkService } from '../../services/cowork';
 import { getCompactFolderName } from '../../utils/path';
+import { isWebBuild } from '../../utils/platform';
 
 // Custom tooltip for folder paths
 interface PathTooltipProps {
@@ -54,6 +55,8 @@ const FolderSelectorPopover: React.FC<FolderSelectorPopoverProps> = ({
   const [showRecentSubmenu, setShowRecentSubmenu] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [submenuPosition, setSubmenuPosition] = useState({ top: 0, left: 0 });
+  const [showPathInput, setShowPathInput] = useState(false);
+  const [pathInputValue, setPathInputValue] = useState('');
   const [tooltipState, setTooltipState] = useState<{
     visible: boolean;
     path: string;
@@ -62,6 +65,7 @@ const FolderSelectorPopover: React.FC<FolderSelectorPopoverProps> = ({
   const popoverRef = useRef<HTMLDivElement>(null);
   const submenuRef = useRef<HTMLDivElement>(null);
   const recentFoldersRef = useRef<HTMLDivElement>(null);
+  const pathInputRef = useRef<HTMLInputElement>(null);
   const tooltipTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Cleanup tooltip timer on unmount
@@ -72,6 +76,13 @@ const FolderSelectorPopover: React.FC<FolderSelectorPopoverProps> = ({
       }
     };
   }, []);
+
+  // Focus path input when shown
+  useEffect(() => {
+    if (showPathInput && pathInputRef.current) {
+      pathInputRef.current.focus();
+    }
+  }, [showPathInput]);
 
   // Load recent folders when popover opens
   useEffect(() => {
@@ -145,6 +156,13 @@ const FolderSelectorPopover: React.FC<FolderSelectorPopoverProps> = ({
   }, [showRecentSubmenu]);
 
   const handleAddFolder = async () => {
+    // In web build, show path input instead of directory dialog
+    if (isWebBuild()) {
+      setShowPathInput(true);
+      setPathInputValue('');
+      return;
+    }
+
     try {
       const result = await window.electron.dialog.selectDirectory();
       if (result.success && result.path) {
@@ -153,6 +171,14 @@ const FolderSelectorPopover: React.FC<FolderSelectorPopoverProps> = ({
       }
     } catch (error) {
       console.error('Failed to select directory:', error);
+    }
+  };
+
+  const handlePathInputSubmit = () => {
+    const path = pathInputValue.trim();
+    if (path) {
+      onSelectFolder(path);
+      onClose();
     }
   };
 
@@ -191,6 +217,51 @@ const FolderSelectorPopover: React.FC<FolderSelectorPopoverProps> = ({
   };
 
   if (!isOpen) return null;
+
+  // Path input mode for web build
+  if (showPathInput) {
+    return (
+      <div
+        ref={popoverRef}
+        className="absolute bottom-full left-0 mb-2 w-80 rounded-lg border dark:border-claude-darkBorder border-claude-border dark:bg-claude-darkSurface bg-claude-surface shadow-lg z-50 p-3"
+      >
+        <div className="text-sm font-medium dark:text-claude-darkText text-claude-text mb-2">
+          Enter folder path
+        </div>
+        <input
+          ref={pathInputRef}
+          type="text"
+          value={pathInputValue}
+          onChange={(e) => setPathInputValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handlePathInputSubmit();
+            } else if (e.key === 'Escape') {
+              onClose();
+            }
+          }}
+          placeholder="/path/to/folder"
+          className="w-full px-3 py-2 rounded-lg dark:bg-claude-darkBg bg-claude-bg dark:border-claude-darkBorder border-claude-border dark:text-claude-darkText text-claude-text text-sm focus:outline-none focus:ring-1 focus:ring-claude-accent/50"
+          autoFocus
+        />
+        <div className="flex justify-end gap-2 mt-3">
+          <button
+            onClick={onClose}
+            className="px-3 py-1.5 text-sm dark:text-claude-darkText text-claude-text dark:hover:bg-claude-darkSurfaceHover hover:bg-claude-surfaceHover rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handlePathInputSubmit}
+            disabled={!pathInputValue.trim()}
+            className="px-3 py-1.5 text-sm bg-claude-accent hover:bg-claude-accentHover text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Select
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

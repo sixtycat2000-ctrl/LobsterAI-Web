@@ -1,25 +1,16 @@
 import React from 'react';
-import { i18nService } from '../../services/i18n';
 
+/**
+ * Stub AppUpdateBadge component for web builds
+ * In web builds, this component renders nothing as auto-updates are handled differently
+ */
 interface AppUpdateBadgeProps {
   latestVersion: string;
   onClick: () => void;
 }
 
-const AppUpdateBadge: React.FC<AppUpdateBadgeProps> = ({ latestVersion, onClick }) => {
-  // In web build, show badge but it will open a simple info modal
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="non-draggable inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/12 px-3 py-1 text-xs font-medium text-emerald-600 hover:bg-emerald-500/18 dark:text-emerald-400 transition-colors whitespace-nowrap"
-      title={`${i18nService.t('updateAvailablePill')} ${latestVersion}`}
-      aria-label={`${i18nService.t('updateAvailablePill')} ${latestVersion}`}
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
-      <span>{i18nService.t('updateAvailablePill')}</span>
-    </button>
-  );
+const AppUpdateBadge: React.FC<AppUpdateBadgeProps> = () => {
+  return null;
 };
 
 export default AppUpdateBadge;

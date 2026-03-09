@@ -15,7 +15,7 @@ export type CoworkSessionStatus = 'idle' | 'running' | 'completed' | 'error';
 export type CoworkMessageType = 'user' | 'assistant' | 'tool_use' | 'tool_result' | 'system';
 
 // Cowork execution mode
-export type CoworkExecutionMode = 'auto' | 'local' | 'sandbox';
+export type CoworkExecutionMode = 'auto' | 'local';
 
 // Cowork message metadata
 export interface CoworkMessageMetadata {
@@ -86,23 +86,6 @@ export interface CoworkApiConfig {
   model: string;
   apiType?: 'anthropic' | 'openai';
 }
-
-export type CoworkSandboxStatus = {
-  supported: boolean;
-  runtimeReady: boolean;
-  imageReady: boolean;
-  downloading: boolean;
-  progress?: CoworkSandboxProgress;
-  error?: string | null;
-};
-
-export type CoworkSandboxProgress = {
-  stage: 'runtime' | 'image';
-  received: number;
-  total?: number;
-  percent?: number;
-  url?: string;
-};
 
 export type CoworkUserMemoryStatus = 'created' | 'stale' | 'deleted';
 

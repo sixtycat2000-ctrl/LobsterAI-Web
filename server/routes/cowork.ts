@@ -1,9 +1,8 @@
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
-import type { RequestContext, CoworkSessionId } from '../index';
+import type { RequestContext, CoworkSessionId } from '../src/index';
 import { probeCoworkModelReadiness, generateSessionTitle } from '../../src/main/libs/coworkUtil';
-import { ensureSandboxReady, getSandboxStatus } from '../../src/main/libs/coworkSandboxRuntime';
 import type { PermissionResult } from '@anthropic-ai/claude-agent-sdk';
 
 // Constants
@@ -302,10 +301,7 @@ export function setupCoworkRoutes(app: Router) {
       const { coworkStore, skillManager } = req.context as RequestContext;
       const config = req.body;
 
-      const normalizedExecutionMode =
-        config.executionMode && String(config.executionMode) === 'container'
-          ? 'sandbox'
-          : config.executionMode;
+      const normalizedExecutionMode = config.executionMode;
       const normalizedMemoryEnabled = typeof config.memoryEnabled === 'boolean'
         ? config.memoryEnabled
         : undefined;
@@ -473,24 +469,6 @@ export function setupCoworkRoutes(app: Router) {
         error: error instanceof Error ? error.message : 'Failed to get memory stats',
       });
     }
-  });
-
-  // ==================== Sandbox ====================
-
-  // GET /api/cowork/sandbox/status - Get sandbox status
-  router.get('/sandbox/status', async (req: Request, res: Response) => {
-    const status = getSandboxStatus();
-    res.json(status);
-  });
-
-  // POST /api/cowork/sandbox/install - Install sandbox
-  router.post('/sandbox/install', async (req: Request, res: Response) => {
-    const result = await ensureSandboxReady();
-    res.json({
-      success: result.ok,
-      status: getSandboxStatus(),
-      error: result.ok ? undefined : ('error' in result ? result.error : undefined),
-    });
   });
 
   // ==================== Utilities ====================

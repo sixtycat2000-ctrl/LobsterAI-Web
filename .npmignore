@@ -1,44 +1,88 @@
-# .npmignore - Used by electron-builder instead of .gitignore
-# This file intentionally does NOT exclude dist/ and dist-electron/
-# so that build outputs are included in the asar archive.
+# .npmignore - Files to exclude from npm package
 
+# Source files
 src/
+server/src/
 tests/
 scripts/
-build/*
-!build/entitlements.mac.plist
-!build/icons/
-!build/icons/**
+
+# Build configs
+tsconfig.json
+electron-tsconfig.json
+vite.config.ts
+vite.config.web.ts
+tailwind.config.js
+postcss.config.js
+.eslintrc.cjs
+
+# Development files
+.eslintrc.cjs
+.gitignore
+.npmrc
+
+# Documentation
+CLAUDE.md
+docs/
+
+# Build artifacts (not needed in npm package)
+dist/
+dist-electron/
+dist-web/
 release/
+build/
+
+# Environment
 .DS_Store
 .env
+.env.*
+
+# Claude
 .claude/
+
+# Python/Sandbox
 __pycache__/
 .codebuddy/
-sandbox/image/out/
-sandbox/image/publish/
-sandbox/image/.work/
-sandbox/runtime/out/
-sandbox/runtime-darwin-*/
-resources/mingit/
-resources/MinGit-*.zip
-resources/PortableGit-*.7z.exe
-resources/python-win/
-resources/python-*.zip
+sandbox/
+
+# Resources
+resources/
+
+# Development
+*.test.ts
+*.test.mjs
+*.spec.ts
+
+# Lock files (optional)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary
+.playwright-mcp/
+.cowork-temp/
+.work.env
+nul
+
+# Skills development files
 SKILLs/**/.connection
 SKILLs/**/.server.log
 SKILLs/**/.server.pid
 SKILLs/**/.venv/
-nul
-.work.env
-.playwright-mcp/
-.cowork-temp/
-*.ts
-!*.d.ts
-tsconfig.json
-electron-tsconfig.json
-vite.config.ts
-tailwind.config.js
-postcss.config.js
-.eslintrc.cjs
-CLAUDE.md

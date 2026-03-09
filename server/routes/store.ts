@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import type { RequestContext } from '../index';
+import type { RequestContext } from '../src/index';
 
 export function setupStoreRoutes(app: Router) {
   const router = Router();

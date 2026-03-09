@@ -31,7 +31,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: 'dist-web',
+    outDir: 'server/public',
     emptyOutDir: true,
     sourcemap: true,
     minify: 'esbuild',

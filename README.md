@@ -11,10 +11,11 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="MIT License"></a>
   <br>
-  <img src="https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux%20%7C%20Mobile-brightgreen?style=for-the-badge" alt="Platform">
+  <img src="https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-brightgreen?style=for-the-badge" alt="Platform">
   <br>
-  <img src="https://img.shields.io/badge/Electron-40-47848F?style=for-the-badge&logo=electron&logoColor=white" alt="Electron">
+  <img src="https://img.shields.io/badge/Node.js-%3E%3D24-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js">
   <img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React">
+  <img src="https://img.shields.io/badge/Express-4.21-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express">
 </p>
 
 <p align="center">
@@ -30,15 +31,14 @@ At its core is **Cowork mode** — it executes tools, manipulates files, and run
 ## Key Features
 
 - **All-in-One Productivity Assistant** — Data analysis, PPT creation, video generation, document writing, web search, email — covers the full range of daily work
-- **Local + Sandbox Execution** — Run tasks directly on your machine or in an isolated Alpine Linux sandbox
+- **Local Execution** — Run tasks directly on your machine with full control and transparency
 - **Built-in Skills** — Office document generation, web search, Playwright automation, Remotion video generation, and more
-- **Windows Built-in Python Runtime** — Windows packages bundle a ready-to-use Python interpreter runtime; Python skill dependencies can be installed on demand
 - **Scheduled Tasks** — Create recurring tasks via conversation or the GUI — daily news digests, inbox cleanup, periodic report generation, and more
 - **Persistent Memory** — Automatically extracts user preferences and personal facts from conversations, remembers your habits across sessions, and gets smarter the more you use it
-- **Mobile via IM** — Control your Agent remotely from your phone through Telegram, Discord, DingTalk, or Feishu
 - **Permission Gating** — All tool invocations require explicit user approval before execution
-- **Cross-Platform** — macOS (Intel + Apple Silicon), Windows, Linux desktop, plus mobile coverage via IM
+- **Cross-Platform** — macOS, Windows, and Linux desktop support
 - **Local Data** — SQLite storage keeps your chat history and configuration on your device
+- **Web Interface** — Access through any modern web browser
 
 ## How It Works
 
@@ -53,7 +53,51 @@ At its core is **Cowork mode** — it executes tools, manipulates files, and run
 - **Node.js** >= 24 < 25
 - **npm**
 
-### Install & Develop
+### Installation
+
+```bash
+# Install globally via npm
+npm install -g lobsterai
+
+# Or use npx without installing
+npx lobsterai
+```
+
+### Usage
+
+Start the LobsterAI server:
+
+```bash
+lobsterai [options]
+```
+
+**Options:**
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-p, --port <number>` | Port to run server on | `3001` |
+| `--host <string>` | Host to bind to | `localhost` |
+| `--no-open` | Don't open browser automatically | - |
+| `--data-dir <path>` | Custom data directory | - |
+| `--workspace <path>` | Workspace directory | User home |
+
+**Examples:**
+
+```bash
+# Start with default settings
+lobsterai
+
+# Start on custom port
+lobsterai -p 8080
+
+# Start without opening browser
+lobsterai --no-open
+
+# Start with custom workspace
+lobsterai --workspace /path/to/workspace
+```
+
+### Development from Source
 
 ```bash
 # Clone the repository
@@ -63,21 +107,17 @@ cd lobsterai
 # Install dependencies
 npm install
 
-# Start development (Vite dev server + Electron with hot reload)
-npm run electron:dev
-```
+# Start development server
+npm run dev
 
-The dev server runs at `http://localhost:5175` by default.
-
-### Production Build
-
-```bash
-# TypeScript compilation + Vite bundle
+# Build for production
 npm run build
 
-# ESLint check
-npm run lint
+# Run built server
+npm start
 ```
+
+The dev server runs at `http://localhost:5176` by default.
 
 ## Packaging & Distribution
 

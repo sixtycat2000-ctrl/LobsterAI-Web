@@ -6,6 +6,20 @@
 import path from 'path';
 import os from 'os';
 
+// Polyfill process.resourcesPath for non-Electron environments
+if (!(process as any).resourcesPath) {
+  (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath = process.cwd();
+}
+
+// Extend Process type
+declare global {
+  namespace NodeJS {
+    interface Process {
+      resourcesPath?: string;
+    }
+  }
+}
+
 // Mock app API
 const getUserDataPath = (): string => {
   const appDataPath = process.env.LOBSTERAI_DATA_PATH || path.join(os.homedir(), '.lobsterai');
@@ -71,6 +85,10 @@ export const session = {
     cookies: {
       get: () => Promise.resolve([]),
       set: () => Promise.resolve(),
+    },
+    fetch: async (url: string, options?: RequestInit) => {
+      // Use native fetch for web server build
+      return fetch(url, options);
     },
   },
   fromPartition: () => ({
@@ -138,4 +156,8 @@ export const systemPreferences = {
 };
 
 // Type exports
-export type { WebContents };
+export type WebContents = {
+  send: (channel: string, ...args: unknown[]) => void;
+  on: (event: string, listener: (...args: unknown[]) => void) => void;
+  openDevTools: () => void;
+};

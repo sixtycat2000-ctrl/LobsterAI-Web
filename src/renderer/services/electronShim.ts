@@ -19,28 +19,14 @@ import type {
   CoworkPermissionRequest,
   CoworkPermissionResult,
   CoworkApiConfig,
-  CoworkSandboxStatus,
-  CoworkSandboxProgress,
 } from '../types/cowork';
 import type { Skill } from '../types/skill';
 import type { McpServerConfig as McpServerConfigIPC, McpMarketplaceData } from '../types/mcp';
-import type { IMGatewayConfig, IMGatewayStatus, IMMessage, IMConnectivityTestResult } from '../types/im';
 
 // Types that are only in electron.d.ts - declare locally
-interface WindowState {
-  isMaximized: boolean;
-}
-
 interface EmailConnectivityTestResult {
   success: boolean;
   message: string;
-}
-
-interface AppUpdateDownloadProgress {
-  percent: number;
-  bytesPerSecond: number;
-  total: number;
-  transferred: number;
 }
 
 // ============================================================================
@@ -221,6 +207,60 @@ const api = {
 // ============================================================================
 // Cowork API
 // ============================================================================
+
+// File change event type
+export interface FileChangeEvent {
+  path: string;
+  type: 'created' | 'modified' | 'deleted';
+  timestamp: number;
+}
+
+// File item type for file browser
+export interface FileItem {
+  name: string;
+  path: string;
+  type: 'file' | 'directory';
+  size?: number;
+  modifiedTime?: number;
+}
+
+// ============================================================================
+// Files API (Web workspace file browser)
+// ============================================================================
+const files = {
+  async list(path: string = ''): Promise<{ success: boolean; items?: FileItem[]; error?: string }> {
+    return apiClient.get(`/files/list?path=${encodeURIComponent(path)}`);
+  },
+
+  async read(path: string): Promise<{ success: boolean; content?: string; error?: string }> {
+    return apiClient.get(`/files/read?path=${encodeURIComponent(path)}`);
+  },
+
+  download(path: string): string {
+    return `/workspace/${encodeURIComponent(path)}`;
+  },
+
+  async validate(path: string): Promise<{ success: boolean; valid?: boolean; error?: string }> {
+    return apiClient.get(`/files/validate?path=${encodeURIComponent(path)}`);
+  },
+
+  onChanged(callback: (data: FileChangeEvent) => void): () => void {
+    return webSocketClient.on('file:changed', callback);
+  },
+};
+
+// ============================================================================
+// Workspace API
+// ============================================================================
+const workspace = {
+  async getPath(): Promise<{ success: boolean; path?: string; error?: string }> {
+    return apiClient.get('/app/workspace');
+  },
+};
+
+// ============================================================================
+// Cowork API
+// ============================================================================
 const cowork = {
   async startSession(options: {
     prompt: string;
@@ -341,24 +381,6 @@ const cowork = {
     return apiClient.get('/cowork/memory/stats');
   },
 
-  async getSandboxStatus(): Promise<CoworkSandboxStatus> {
-    const result = await apiClient.get('/cowork/sandbox/status');
-    return result.data as CoworkSandboxStatus || { supported: false, runtimeReady: false, imageReady: false, downloading: false };
-  },
-
-  async installSandbox(): Promise<{ success: boolean; status?: CoworkSandboxStatus; error?: string }> {
-    const result = await apiClient.post('/cowork/sandbox/install', {});
-    return {
-      success: result.success,
-      status: result.data as CoworkSandboxStatus | undefined,
-      error: result.error,
-    };
-  },
-
-  onSandboxDownloadProgress(callback: (data: CoworkSandboxProgress) => void): () => void {
-    return webSocketClient.on(WS_EVENTS.COWORK_SANDBOX_PROGRESS, callback);
-  },
-
   // Stream event listeners
   onStreamMessage(callback: (data: { sessionId: string; message: CoworkMessage }) => void): () => void {
     return webSocketClient.on(WS_EVENTS.COWORK_MESSAGE, callback);
@@ -381,45 +403,6 @@ const cowork = {
   },
 };
 
-// ============================================================================
-// IM API
-// ============================================================================
-const im = {
-  async getConfig(): Promise<{ success: boolean; config?: IMGatewayConfig; error?: string }> {
-    return apiClient.get('/im/config');
-  },
-
-  async setConfig(config: Partial<IMGatewayConfig>): Promise<{ success: boolean; error?: string }> {
-    return apiClient.put('/im/config', config);
-  },
-
-  async startGateway(platform: 'dingtalk' | 'feishu' | 'qq' | 'telegram' | 'discord' | 'nim' | 'xiaomifeng' | 'wecom'): Promise<{ success: boolean; error?: string }> {
-    return apiClient.post(`/im/gateways/${platform}/start`, {});
-  },
-
-  async stopGateway(platform: 'dingtalk' | 'feishu' | 'qq' | 'telegram' | 'discord' | 'nim' | 'xiaomifeng' | 'wecom'): Promise<{ success: boolean; error?: string }> {
-    return apiClient.post(`/im/gateways/${platform}/stop`, {});
-  },
-
-  async testGateway(
-    platform: 'dingtalk' | 'feishu' | 'qq' | 'telegram' | 'discord' | 'nim' | 'xiaomifeng' | 'wecom',
-    configOverride?: Partial<IMGatewayConfig>
-  ): Promise<{ success: boolean; result?: IMConnectivityTestResult; error?: string }> {
-    return apiClient.post(`/im/gateways/${platform}/test`, configOverride || {});
-  },
-
-  async getStatus(): Promise<{ success: boolean; status?: IMGatewayStatus; error?: string }> {
-    return apiClient.get('/im/status');
-  },
-
-  onStatusChange(callback: (status: IMGatewayStatus) => void): () => void {
-    return webSocketClient.on(WS_EVENTS.IM_STATUS_CHANGE, callback);
-  },
-
-  onMessageReceived(callback: (message: IMMessage) => void): () => void {
-    return webSocketClient.on(WS_EVENTS.IM_MESSAGE_RECEIVED, callback);
-  },
-};
 
 // ============================================================================
 // Scheduled Tasks API
@@ -530,28 +513,8 @@ const ipcRenderer = {
 };
 
 // ============================================================================
-// Window (Not applicable in web, stubbed)
+// Window (Not applicable in web, removed)
 // ============================================================================
-const windowControls = {
-  minimize(): void {
-    console.warn('[ElectronShim] Window minimize not available in web');
-  },
-  toggleMaximize(): void {
-    console.warn('[ElectronShim] Window maximize not available in web');
-  },
-  close(): void {
-    console.warn('[ElectronShim] Window close not available in web');
-  },
-  async isMaximized(): Promise<boolean> {
-    return false;
-  },
-  showSystemMenu(_position: { x: number; y: number }): void {
-    console.warn('[ElectronShim] System menu not available in web');
-  },
-  onStateChanged(callback: (state: WindowState) => void): () => void {
-    return webSocketClient.on(WS_EVENTS.WINDOW_STATE_CHANGED, callback);
-  },
-};
 
 // ============================================================================
 // Dialog (Web simulation)
@@ -613,17 +576,8 @@ const shell = {
 };
 
 // ============================================================================
-// Auto Launch (Not applicable in web)
+// Auto Launch (Not applicable in web, removed)
 // ============================================================================
-const autoLaunch = {
-  async get(): Promise<{ enabled: boolean }> {
-    return { enabled: false };
-  },
-
-  async set(_enabled: boolean): Promise<{ success: boolean; error?: string }> {
-    return { success: false, error: 'Not available in web' };
-  },
-};
 
 // ============================================================================
 // App Info
@@ -640,42 +594,12 @@ const appInfo = {
 };
 
 // ============================================================================
-// App Update (Not applicable in web)
+// App Update (Not applicable in web, removed)
 // ============================================================================
-const appUpdate = {
-  async download(_url: string): Promise<{ success: boolean; filePath?: string; error?: string }> {
-    return { success: false, error: 'Not available in web' };
-  },
-
-  async cancelDownload(): Promise<{ success: boolean }> {
-    return { success: false };
-  },
-
-  async install(_filePath: string): Promise<{ success: boolean; error?: string }> {
-    return { success: false, error: 'Not available in web' };
-  },
-
-  onDownloadProgress(callback: (data: AppUpdateDownloadProgress) => void): () => void {
-    return webSocketClient.on(WS_EVENTS.UPDATE_DOWNLOAD_PROGRESS, callback);
-  },
-};
 
 // ============================================================================
-// Log (Not applicable in web)
+// Log (Not applicable in web, removed)
 // ============================================================================
-const log = {
-  async getPath(): Promise<string> {
-    return '';
-  },
-
-  async openFolder(): Promise<void> {
-    console.warn('[ElectronShim] Log folder not available in web');
-  },
-
-  async exportZip(): Promise<{ success: boolean; canceled?: boolean; path?: string; missingEntries?: string[]; error?: string }> {
-    return { success: false, error: 'Not available in web' };
-  },
-};
 
 // ============================================================================
 // Permissions (Web simulation)
@@ -724,18 +648,15 @@ interface ElectronShim {
   generateSessionTitle: typeof generateSessionTitle;
   getRecentCwds: typeof getRecentCwds;
   ipcRenderer: typeof ipcRenderer;
-  window: typeof windowControls;
   dialog: typeof dialog;
   shell: typeof shell;
-  autoLaunch: typeof autoLaunch;
   appInfo: typeof appInfo;
-  appUpdate: typeof appUpdate;
-  log: typeof log;
-  im: typeof im;
   scheduledTasks: typeof scheduledTasks;
   permissions: typeof permissions;
   networkStatus: typeof networkStatus;
   cowork: typeof cowork;
+  files: typeof files;
+  workspace: typeof workspace;
 }
 
 export function createElectronShim(): ElectronShim {
@@ -752,18 +673,15 @@ export function createElectronShim(): ElectronShim {
     generateSessionTitle,
     getRecentCwds,
     ipcRenderer,
-    window: windowControls,
     dialog,
     shell,
-    autoLaunch,
     appInfo,
-    appUpdate,
-    log,
-    im,
     scheduledTasks,
     permissions,
     networkStatus,
     cowork,
+    files,
+    workspace,
   };
 }
 

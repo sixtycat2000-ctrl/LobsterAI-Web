@@ -193,6 +193,50 @@ export class SqliteStore {
     fs.writeFileSync(this.dbPath, buffer);
   }
 
+  // Alias for compatibility with main process SqliteStore
+  initializeTables(): void {
+    this.initTables();
+  }
+
+  // Event listener methods for compatibility
+  onDidChange(callback: (payload: ChangePayload) => void): () => void {
+    return this.onChange(callback);
+  }
+
+  // Legacy memory methods (no-op for web version)
+  tryReadLegacyMemoryText(): { text: string } | null {
+    return null;
+  }
+
+  parseLegacyMemoryEntries(): { id: string; text: string }[] {
+    return [];
+  }
+
+  // User memories methods
+  getUserMemories(): Array<{ id: string; text: string; confidence: number; status: string }> {
+    const result = this.db.exec('SELECT id, text, confidence, status FROM user_memories WHERE status != "deleted"');
+    if (result.length === 0) return [];
+    return result[0].values.map((row) => ({
+      id: row[0] as string,
+      text: row[1] as string,
+      confidence: row[2] as number,
+      status: row[3] as string,
+    }));
+  }
+
+  // Additional methods for compatibility
+  memoryFingerprint(): string {
+    return '';
+  }
+
+  migrateLegacyMemoryFileToUserMemories(): Promise<number> {
+    return Promise.resolve(0);
+  }
+
+  migrateFromElectronStore(): Promise<void> {
+    return Promise.resolve();
+  }
+
   get<T>(key: string): T | undefined {
     const result = this.db.exec('SELECT value FROM kv WHERE key = ?', [key]);
     if (result.length === 0 || result[0].values.length === 0) {

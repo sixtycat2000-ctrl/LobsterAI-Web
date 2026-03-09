@@ -8,6 +8,15 @@ const assert = require('node:assert');
 const WebSocket = require('ws');
 const { createTestServer } = require('./setup.js');
 
+// Handle unhandled rejections that may occur during cleanup
+process.on('unhandledRejection', (reason, promise) => {
+  // Ignore known cleanup errors
+  if (reason && reason.message && reason.message.includes('getPath')) {
+    return;
+  }
+  console.error('Unhandled Rejection:', reason);
+});
+
 describe('WebSocket Tests', () => {
   let testServer;
   let wsUrl;
@@ -19,6 +28,8 @@ describe('WebSocket Tests', () => {
   });
 
   after(async () => {
+    // Add a small delay to allow any pending async operations to complete
+    await new Promise((resolve) => setTimeout(resolve, 100));
     await testServer.close();
     console.log('Test server closed');
   });

@@ -2,13 +2,11 @@ import { BrowserWindow } from 'electron';
 import { ScheduledTaskStore, ScheduledTask, ScheduledTaskRun, Schedule, NotifyPlatform } from '../scheduledTaskStore';
 import type { CoworkStore } from '../coworkStore';
 import type { CoworkRunner } from './coworkRunner';
-import type { IMGatewayManager } from '../im/imGatewayManager';
 
 interface SchedulerDeps {
   scheduledTaskStore: ScheduledTaskStore;
   coworkStore: CoworkStore;
   getCoworkRunner: () => CoworkRunner;
-  getIMGatewayManager?: () => IMGatewayManager | null;
   getSkillsPrompt?: () => Promise<string | null>;
 }
 
@@ -16,7 +14,6 @@ export class Scheduler {
   private store: ScheduledTaskStore;
   private coworkStore: CoworkStore;
   private getCoworkRunner: () => CoworkRunner;
-  private getIMGatewayManager: (() => IMGatewayManager | null) | null;
   private getSkillsPrompt: (() => Promise<string | null>) | null;
   private timer: ReturnType<typeof setTimeout> | null = null;
   private running = false;
@@ -31,7 +28,6 @@ export class Scheduler {
     this.store = deps.scheduledTaskStore;
     this.coworkStore = deps.coworkStore;
     this.getCoworkRunner = deps.getCoworkRunner;
-    this.getIMGatewayManager = deps.getIMGatewayManager ?? null;
     this.getSkillsPrompt = deps.getSkillsPrompt ?? null;
   }
 
@@ -186,11 +182,6 @@ export class Scheduler {
         // Prune old run history
         this.store.pruneRuns(task.id, 100);
 
-        // Send IM notifications
-        if (task.notifyPlatforms && task.notifyPlatforms.length > 0) {
-          await this.sendNotifications(task, success, durationMs, error, sessionId);
-        }
-
         // Emit final updates
         this.emitTaskStatusUpdate(task.id);
         const updatedRun = this.store.getRun(run.id);
@@ -249,66 +240,6 @@ export class Scheduler {
     });
 
     return session.id;
-  }
-
-  // --- IM Notifications ---
-
-  private async sendNotifications(
-    task: ScheduledTask,
-    success: boolean,
-    durationMs: number,
-    error: string | null,
-    sessionId: string | null,
-  ): Promise<void> {
-    const imManager = this.getIMGatewayManager?.();
-    if (!imManager) return;
-
-    const status = success ? '✅ 成功' : '❌ 失败';
-    const durationStr = durationMs < 1000
-      ? `${durationMs}ms`
-      : `${(durationMs / 1000).toFixed(1)}s`;
-
-    let header = `📋 定时任务通知\n\n任务: ${task.name}\n状态: ${status}\n耗时: ${durationStr}`;
-    if (error) {
-      header += `\n错误: ${error}`;
-    }
-
-    // Extract full AI reply from completed cowork session (includes media markers)
-    let fullReplyText = '';
-    if (sessionId && success) {
-      try {
-        const session = this.coworkStore.getSession(sessionId);
-        if (session) {
-          const assistantMessages = session.messages.filter(
-            (msg) => msg.type === 'assistant' && msg.content && !msg.metadata?.isThinking
-          );
-          fullReplyText = assistantMessages.map(m => m.content).join('\n\n');
-        }
-      } catch (err: unknown) {
-        console.warn(`[Scheduler] Failed to extract session result for notification:`, err);
-      }
-    }
-
-    // Build the complete notification message with header + result
-    let message = header;
-    if (fullReplyText) {
-      const MAX_RESULT_LENGTH = 1500;
-      const resultSnippet = fullReplyText.length > MAX_RESULT_LENGTH
-        ? fullReplyText.slice(0, MAX_RESULT_LENGTH) + '…'
-        : fullReplyText;
-      message += `\n\n📝 执行结果:\n${resultSnippet}`;
-    }
-
-    for (const platform of task.notifyPlatforms) {
-      try {
-        // Use sendNotificationWithMedia to support media files in AI reply
-        await imManager.sendNotificationWithMedia(platform, message);
-        console.log(`[Scheduler] Notification sent via ${platform} for task ${task.id}`);
-      } catch (err: unknown) {
-        const errMsg = err instanceof Error ? err.message : String(err);
-        console.warn(`[Scheduler] Failed to send notification via ${platform}: ${errMsg}`);
-      }
-    }
   }
 
   // --- Manual Execution ---

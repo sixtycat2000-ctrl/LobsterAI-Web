@@ -51,3 +51,13 @@ src/main/**/*.js
 src/main/**/*.js.map
 src/renderer/types/*.js
 src/renderer/types/*.js.map
+
+# Compiled server files
+server/**/*.js
+server/**/*.js.map
+server/**/*.d.ts
+!server/src/**/*.ts
+
+# Backup files
+*.bak
+*.backup

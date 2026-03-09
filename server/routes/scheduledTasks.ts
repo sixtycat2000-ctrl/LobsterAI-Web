@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
-import type { RequestContext } from '../index';
+import type { RequestContext } from '../src/index';
 
 const resolveExistingTaskWorkingDirectory = (workspaceRoot: string): string => {
   const trimmed = workspaceRoot.trim();

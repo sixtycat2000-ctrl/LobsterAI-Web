@@ -16,57 +16,64 @@ import { ensurePythonPipReady, ensurePythonRuntimeReady } from './pythonRuntime'
 import { cpRecursiveSync } from '../fsCompat';
 import { isQuestionLikeMemoryText, type CoworkMemoryGuardLevel } from './coworkMemoryExtractor';
 import { z } from 'zod';
-import { ensureSandboxReady, getSandboxRuntimeInfoIfReady, type SandboxRuntimeInfo } from './coworkSandboxRuntime';
-import {
-  buildSandboxRequest,
-  collectSkillFilesForSandbox,
-  ensureCoworkSandboxDirs,
-  findFreePort,
-  resolveSandboxCwd,
-  spawnCoworkSandboxVm,
-  type SandboxCwdMapping,
-  type SandboxExtraMount,
-  VirtioSerialBridge,
-} from './coworkVmRunner';
 
-const SANDBOX_ALLOWED_ENV_KEYS = [
-  'ANTHROPIC_AUTH_TOKEN',
-  'ANTHROPIC_API_KEY',
-  'ANTHROPIC_BASE_URL',
-  'LOBSTERAI_API_BASE_URL',
-  'ANTHROPIC_MODEL',
-  'HTTP_PROXY',
-  'HTTPS_PROXY',
-  'NO_PROXY',
-  'http_proxy',
-  'https_proxy',
-  'no_proxy',
-  'TZ',
-  'tz',
-] as const;
+// Stubs for removed sandbox functionality - @ts-ignore used to suppress errors
+// These functions/variables should never be called since sandbox mode is rejected early
+declare const SANDBOX_SKILLS_MOUNT_TAG: any;
+declare const SANDBOX_SKILLS_GUEST_PATH_WINDOWS: any;
+declare const SANDBOX_SKILLS_GUEST_PATH: any;
+declare const SANDBOX_WORKSPACE_GUEST_ROOT: any;
+declare const SANDBOX_WORKSPACE_LEGACY_ROOT: any;
+declare const SANDBOX_ATTACHMENT_DIR: any;
+declare const SANDBOX_HISTORY_MAX_MESSAGES: any;
+declare const SANDBOX_HISTORY_MAX_TOTAL_CHARS: any;
+declare const SANDBOX_HISTORY_MAX_MESSAGE_CHARS: any;
+declare const SANDBOX_ALLOWED_ENV_KEYS: any;
+declare const LEGACY_SKILLS_ROOT_HINTS: any;
+// @ts-ignore
+type SandboxRuntimeInfo = any;
+// @ts-ignore
+type SandboxCwdMapping = any;
+// @ts-ignore
+type SandboxExtraMount = any;
+// @ts-ignore
+class VirtioSerialBridge {
+  constructor(_ipcDir: any, _hostCwd?: any) {}
+  // @ts-ignore
+  setHostCwd(_hostCwd: any): void { throw new Error('Sandbox removed'); }
+  // @ts-ignore
+  async connect(_port: any): Promise<void> { throw new Error('Sandbox removed'); }
+  // @ts-ignore
+  close(): void { throw new Error('Sandbox removed'); }
+  // @ts-ignore
+  sendPermissionResponse(_requestId: any, _result: any): void { throw new Error('Sandbox removed'); }
+  // @ts-ignore
+  sendHostToolResponse(_requestId: any, _payload: any): void { throw new Error('Sandbox removed'); }
+  // @ts-ignore
+  pushFile(_basePath: any, _relativePath: any, _data: any): void { throw new Error('Sandbox removed'); }
+  // @ts-ignore
+  sendRequest(_requestId: any, _data: any): void { throw new Error('Sandbox removed'); }
+}
+// @ts-ignore
+function ensureCoworkSandboxDirs(_sessionId: any): any { throw new Error('Sandbox removed'); }
+// @ts-ignore
+function resolveSandboxCwd(_cwd: any): any { throw new Error('Sandbox removed'); }
+// @ts-ignore
+function spawnCoworkSandboxVm(_options: any): any { throw new Error('Sandbox removed'); }
+// @ts-ignore
+function findFreePort(): any { throw new Error('Sandbox removed'); }
+// @ts-ignore
+function collectSkillFilesForSandbox(_skillsRoot: any): any { throw new Error('Sandbox removed'); }
+// @ts-ignore
+function buildSandboxRequest(_paths: any, _input: any): any { throw new Error('Sandbox removed'); }
+// @ts-ignore
+function getSandboxRuntimeInfoIfReady(): any { throw new Error('Sandbox removed'); }
+// @ts-ignore
+async function ensureSandboxReady(): Promise<any> { throw new Error('Sandbox removed'); }
 
-const SANDBOX_SKILLS_MOUNT_TAG = 'skills';
-// On macOS/Linux, keep sandbox skills outside the project workspace mount to
-// avoid creating SKILLs directories in the user's selected host folder.
-// On Windows, keep historical path for compatibility with serial-mode flows.
-const SANDBOX_SKILLS_GUEST_PATH = '/workspace/skills';
-const SANDBOX_SKILLS_GUEST_PATH_WINDOWS = '/workspace/project/SKILLs';
-const SANDBOX_WORKSPACE_GUEST_ROOT = '/workspace/project';
-const SANDBOX_WORKSPACE_LEGACY_ROOT = '/workspace';
 const ATTACHMENT_LINE_RE = /^\s*(?:[-*]\s*)?(输入文件|input\s*file)\s*[:：]\s*(.+?)\s*$/i;
 const INFERRED_FILE_REFERENCE_RE = /([^\s"'`，。！？：:；;（）()\[\]{}<>《》【】]+?\.[A-Za-z][A-Za-z0-9]{0,7})/g;
-const SANDBOX_ATTACHMENT_DIR = path.join('.cowork-temp', 'attachments');
-const LEGACY_SKILLS_ROOT_HINTS = [
-  '/home/ubuntu/skills',
-  '/mnt/skills',
-  '/tmp/workspace/skills',
-  '/workspace/skills',
-  '/workspace/SKILLs',
-];
 const INFERRED_FILE_SEARCH_IGNORE = new Set(['.git', 'node_modules', '.cowork-temp', '.idea', '.vscode']);
-const SANDBOX_HISTORY_MAX_MESSAGES = 18;
-const SANDBOX_HISTORY_MAX_TOTAL_CHARS = 24000;
-const SANDBOX_HISTORY_MAX_MESSAGE_CHARS = 3000;
 const LOCAL_HISTORY_MAX_MESSAGES = 24;
 const LOCAL_HISTORY_MAX_TOTAL_CHARS = 32000;
 const LOCAL_HISTORY_MAX_MESSAGE_CHARS = 4000;
@@ -3607,7 +3614,15 @@ export class CoworkRunner extends EventEmitter {
       return;
     }
 
-    const shouldPrepareSandboxPrompt = executionMode !== 'local' || activeSession.executionMode === 'sandbox';
+    // Sandbox execution mode has been removed
+    if (executionMode === 'sandbox' as any || activeSession.executionMode === 'sandbox' as any) {
+      this.handleError(sessionId, 'Sandbox/VM execution mode has been removed. Please use "local" or "auto" execution mode instead.');
+      this.clearPendingPermissions(sessionId);
+      this.activeSessions.delete(sessionId);
+      return;
+    }
+
+    const shouldPrepareSandboxPrompt = false;
     let effectivePrompt = this.augmentPromptWithReferencedWorkspaceFiles(prompt, resolvedCwd);
     let unresolvedSandboxAttachments: string[] = [];
     if (shouldPrepareSandboxPrompt) {
@@ -3621,14 +3636,14 @@ export class CoworkRunner extends EventEmitter {
       ...unresolvedSandboxAttachments,
     ]));
     const hasActiveSandboxVm = (
-      activeSession.executionMode === 'sandbox'
+      activeSession.executionMode === 'sandbox' as any
       && activeSession.sandboxProcess
       && !activeSession.sandboxProcess.killed
       && activeSession.ipcBridge
     );
     if (outsideAttachments.length > 0 && (executionMode !== 'local' || hasActiveSandboxVm)) {
       const detail = outsideAttachments.join(', ');
-      if (executionMode === 'sandbox' || hasActiveSandboxVm) {
+      if (executionMode === 'sandbox' as any || hasActiveSandboxVm) {
         this.handleError(
           sessionId,
           `Attachment paths outside working directory are not available in sandbox mode: ${detail}`
@@ -3668,7 +3683,7 @@ export class CoworkRunner extends EventEmitter {
     if (!sandboxReady.ok) {
       const errorMessage = 'error' in sandboxReady ? sandboxReady.error : 'Sandbox VM unavailable.';
       coworkLog('WARN', 'runClaudeCode', 'Sandbox not ready', { errorMessage, executionMode });
-      if (executionMode === 'sandbox') {
+      if (executionMode === 'sandbox' as any) {
         this.handleError(sessionId, errorMessage);
         this.clearPendingPermissions(sessionId);
         this.activeSessions.delete(sessionId);
@@ -3689,8 +3704,8 @@ export class CoworkRunner extends EventEmitter {
 
     try {
       const sandboxPrompt = this.injectSandboxHistoryPrompt(sessionId, prompt, effectivePrompt);
-      activeSession.executionMode = 'sandbox';
-      this.store.updateSession(sessionId, { executionMode: 'sandbox' });
+      activeSession.executionMode = 'sandbox' as any;
+      this.store.updateSession(sessionId, { executionMode: 'sandbox' as any });
       coworkLog('INFO', 'runClaudeCode', 'Starting sandbox execution', {
         sessionId,
         runtimeBinary: sandboxReady.runtimeInfo.runtimeBinary,
@@ -3706,7 +3721,7 @@ export class CoworkRunner extends EventEmitter {
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown sandbox error';
-      if (executionMode === 'sandbox') {
+      if (executionMode === 'sandbox' as any) {
         this.handleError(sessionId, message);
         this.activeSessions.delete(sessionId);
         return;
@@ -4832,7 +4847,7 @@ export class CoworkRunner extends EventEmitter {
 
       // For sandbox mode, mark session as completed when we receive a successful result.
       // Keep the VM alive for multi-turn conversations instead of killing it.
-      if (activeSession.executionMode === 'sandbox') {
+      if (activeSession.executionMode === 'sandbox' as any) {
         this.finalizeStreamingContent(activeSession);
         const session = this.store.getSession(sessionId);
         if (session?.status !== 'error' && session?.status !== 'completed') {

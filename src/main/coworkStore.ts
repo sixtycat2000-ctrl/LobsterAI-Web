@@ -295,7 +295,7 @@ function shouldAutoDeleteMemoryText(text: string): boolean {
 // Types mirroring src/types/cowork.ts for main process use
 export type CoworkSessionStatus = 'idle' | 'running' | 'completed' | 'error';
 export type CoworkMessageType = 'user' | 'assistant' | 'tool_use' | 'tool_result' | 'system';
-export type CoworkExecutionMode = 'auto' | 'local' | 'sandbox';
+export type CoworkExecutionMode = 'auto' | 'local';
 
 export interface CoworkMessageMetadata {
   toolName?: string;
@@ -439,13 +439,8 @@ const getDefaultSystemPrompt = (): string => {
     return cachedDefaultSystemPrompt;
   }
 
-  try {
-    const promptPath = path.join(app.getAppPath(), 'sandbox', 'agent-runner', 'AGENT_SYSTEM_PROMPT.md');
-    cachedDefaultSystemPrompt = fs.readFileSync(promptPath, 'utf-8');
-  } catch (error) {
-    console.warn('Failed to load default system prompt:', error);
-    cachedDefaultSystemPrompt = '';
-  }
+  // Default system prompt (sandbox VM has been removed)
+  cachedDefaultSystemPrompt = '';
 
   return cachedDefaultSystemPrompt;
 };
@@ -822,7 +817,7 @@ export class CoworkStore {
     const memoryUserMemoriesMaxItemsRow = this.getOne<ConfigRow>('SELECT value FROM cowork_config WHERE key = ?', ['memoryUserMemoriesMaxItems']);
 
     const normalizedExecutionMode =
-      executionModeRow?.value === 'container' ? 'sandbox' : (executionModeRow?.value as CoworkExecutionMode);
+      (executionModeRow?.value as CoworkExecutionMode);
 
     return {
       workingDirectory: workingDirRow?.value || getDefaultWorkingDirectory(),

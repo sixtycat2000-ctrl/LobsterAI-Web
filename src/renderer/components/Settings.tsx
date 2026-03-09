@@ -9,7 +9,7 @@ import { decryptSecret, encryptWithPassword, decryptWithPassword, EncryptedPaylo
 import { coworkService } from '../services/cowork';
 import { APP_ID, EXPORT_FORMAT_TYPE, EXPORT_PASSWORD } from '../constants/app';
 import ErrorMessage from './ErrorMessage';
-import { XMarkIcon, Cog6ToothIcon, SignalIcon, CheckCircleIcon, XCircleIcon, CubeIcon, ChatBubbleLeftIcon, ShieldCheckIcon, EnvelopeIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, Cog6ToothIcon, SignalIcon, CheckCircleIcon, XCircleIcon, CubeIcon, EnvelopeIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import { EyeIcon, EyeSlashIcon, XCircleIcon as XCircleIconSolid } from '@heroicons/react/20/solid';
 import PlusCircleIcon from './icons/PlusCircleIcon';
 import TrashIcon from './icons/TrashIcon';
@@ -23,10 +23,7 @@ import type {
   CoworkExecutionMode,
   CoworkUserMemoryEntry,
   CoworkMemoryStats,
-  CoworkSandboxProgress,
-  CoworkSandboxStatus,
 } from '../types/cowork';
-import IMSettings from './im/IMSettings';
 import EmailSkillConfig from './skills/EmailSkillConfig';
 import { defaultConfig, type AppConfig, getVisibleProviders } from '../config';
 import {
@@ -48,7 +45,7 @@ import {
 } from './icons/providers';
 import { hasAutoLaunch, hasExportLogs } from '../utils/platform';
 
-type TabType = 'general' | 'model' | 'coworkSandbox' | 'coworkMemory' | 'shortcuts' | 'im' | 'email' | 'about';
+type TabType = 'general' | 'model' | 'coworkMemory' | 'shortcuts' | 'email' | 'about';
 
 export type SettingsOpenOptions = {
   initialTab?: TabType;
@@ -426,8 +423,21 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice, onUpda
   const [testModeUnlocked, setTestModeUnlocked] = useState(false);
   const [updateCheckStatus, setUpdateCheckStatus] = useState<'idle' | 'checking' | 'upToDate' | 'error'>('idle');
 
+  // Workspace info (web build)
+  const [workspacePath, setWorkspacePath] = useState<string>('');
+  const [dataDirPath, setDataDirPath] = useState<string>('');
+
   useEffect(() => {
     window.electron.appInfo.getVersion().then(setAppVersion);
+
+    // Load workspace and data directory paths (web build)
+    if (window.electron.workspace) {
+      window.electron.workspace.getPath().then(result => {
+        if (result.success && result.path) {
+          setWorkspacePath(result.path);
+        }
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -533,10 +543,6 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice, onUpda
   const [coworkMemoryEditingId, setCoworkMemoryEditingId] = useState<string | null>(null);
   const [coworkMemoryDraftText, setCoworkMemoryDraftText] = useState<string>('');
   const [showMemoryModal, setShowMemoryModal] = useState<boolean>(false);
-  const [coworkSandboxStatus, setCoworkSandboxStatus] = useState<CoworkSandboxStatus | null>(null);
-  const [coworkSandboxLoading, setCoworkSandboxLoading] = useState(true);
-  const [coworkSandboxProgress, setCoworkSandboxProgress] = useState<CoworkSandboxProgress | null>(null);
-  const [coworkSandboxInstalling, setCoworkSandboxInstalling] = useState(false);
 
   useEffect(() => {
     setCoworkExecutionMode(coworkConfig.executionMode || 'local');
@@ -556,36 +562,6 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice, onUpda
       window.clearTimeout(updateCheckTimerRef.current);
     }
   }, []);
-
-  const loadCoworkSandboxStatus = useCallback(async () => {
-    setCoworkSandboxLoading(true);
-    try {
-      const status = await coworkService.getSandboxStatus();
-      setCoworkSandboxStatus(status);
-      if (status?.progress) {
-        setCoworkSandboxProgress(status.progress);
-      }
-    } catch (loadError) {
-      console.error('Failed to load cowork sandbox status:', loadError);
-      setCoworkSandboxStatus(null);
-    } finally {
-      setCoworkSandboxLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadCoworkSandboxStatus();
-  }, [loadCoworkSandboxStatus]);
-
-  useEffect(() => {
-    const unsubscribe = coworkService.onSandboxDownloadProgress((progress) => {
-      setCoworkSandboxProgress(progress);
-      if (progress.percent !== undefined && progress.percent >= 1) {
-        void loadCoworkSandboxStatus();
-      }
-    });
-    return () => unsubscribe();
-  }, [loadCoworkSandboxStatus]);
 
   useEffect(() => {
     try {
@@ -953,48 +929,6 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice, onUpda
     || coworkMemoryEnabled !== coworkConfig.memoryEnabled
     || coworkMemoryLlmJudgeEnabled !== coworkConfig.memoryLlmJudgeEnabled;
 
-  const coworkSandboxDisabled = !coworkSandboxStatus?.supported
-    || !coworkSandboxStatus?.runtimeReady
-    || !coworkSandboxStatus?.imageReady;
-
-  const coworkSandboxStatusHint = useMemo(() => {
-    if (coworkSandboxLoading) return i18nService.t('coworkSandboxChecking');
-    if (!coworkSandboxStatus?.supported) return i18nService.t('coworkSandboxUnsupported');
-    if (coworkSandboxStatus?.downloading) return i18nService.t('coworkSandboxDownloading');
-    if (!coworkSandboxStatus?.runtimeReady) return i18nService.t('coworkSandboxRuntimeMissing');
-    if (!coworkSandboxStatus?.imageReady) return i18nService.t('coworkSandboxImageMissing');
-    return '';
-  }, [coworkSandboxLoading, coworkSandboxStatus]);
-
-  const coworkSandboxPercent = useMemo(() => {
-    if (!coworkSandboxProgress) return null;
-    if (coworkSandboxProgress.percent !== undefined && Number.isFinite(coworkSandboxProgress.percent)) {
-      return Math.min(100, Math.max(0, Math.round(coworkSandboxProgress.percent * 100)));
-    }
-    if (coworkSandboxProgress.total && coworkSandboxProgress.total > 0) {
-      return Math.min(100, Math.max(0, Math.round((coworkSandboxProgress.received / coworkSandboxProgress.total) * 100)));
-    }
-    return null;
-  }, [coworkSandboxProgress]);
-
-  const coworkSandboxStageLabel = coworkSandboxProgress?.stage === 'image'
-    ? (i18nService.getLanguage() === 'zh' ? '镜像' : 'Image')
-    : (i18nService.getLanguage() === 'zh' ? '运行时' : 'Runtime');
-
-  const handleInstallCoworkSandbox = async () => {
-    setCoworkSandboxInstalling(true);
-    try {
-      const result = await coworkService.installSandbox();
-      if (result?.status) {
-        setCoworkSandboxStatus(result.status);
-        if (result.status.progress) {
-          setCoworkSandboxProgress(result.status.progress);
-        }
-      }
-    } finally {
-      setCoworkSandboxInstalling(false);
-    }
-  };
 
   const loadCoworkMemoryData = useCallback(async () => {
     setCoworkMemoryListLoading(true);
@@ -1809,10 +1743,8 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice, onUpda
   const sidebarTabs: { key: TabType; label: string; icon: React.ReactNode }[] = useMemo(() => [
     { key: 'general',        label: i18nService.t('general'),        icon: <Cog6ToothIcon className="h-5 w-5" /> },
     { key: 'model',          label: i18nService.t('model'),          icon: <CubeIcon className="h-5 w-5" /> },
-    { key: 'im',             label: i18nService.t('imBot'),          icon: <ChatBubbleLeftIcon className="h-5 w-5" /> },
     { key: 'email',          label: i18nService.t('emailTab'),       icon: <EnvelopeIcon className="h-5 w-5" /> },
     { key: 'coworkMemory',   label: i18nService.t('coworkMemoryTitle'), icon: <BrainIcon className="h-5 w-5" /> },
-    { key: 'coworkSandbox',  label: i18nService.t('coworkSandbox'),  icon: <ShieldCheckIcon className="h-5 w-5" /> },
     { key: 'shortcuts',      label: i18nService.t('shortcuts'),      icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5"><rect x="2" y="4" width="20" height="14" rx="2" /><line x1="6" y1="8" x2="8" y2="8" /><line x1="10" y1="8" x2="12" y2="8" /><line x1="14" y1="8" x2="16" y2="8" /><line x1="6" y1="12" x2="8" y2="12" /><line x1="10" y1="12" x2="14" y2="12" /><line x1="16" y1="12" x2="18" y2="12" /><line x1="8" y1="15.5" x2="16" y2="15.5" /></svg> },
     { key: 'about',          label: i18nService.t('about'),          icon: <InformationCircleIcon className="h-5 w-5" /> },
   ], [language]);
@@ -1847,6 +1779,18 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice, onUpda
                 />
               </div>
             </div>
+
+            {/* Workspace Path Section (web build) */}
+            {workspacePath && (
+              <div>
+                <h4 className="text-sm font-medium dark:text-claude-darkText text-claude-text mb-3">
+                  Workspace Path
+                </h4>
+                <div className="text-sm dark:text-claude-darkSecondaryText text-claude-textSecondary break-all font-mono">
+                  {workspacePath}
+                </div>
+              </div>
+            )}
 
             {/* Auto-launch Section (Electron only) */}
             {hasAutoLaunch() && (
@@ -2057,108 +2001,6 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice, onUpda
 
       case 'email':
         return <EmailSkillConfig />;
-
-      case 'coworkSandbox':
-        return (
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <label className="block text-sm font-medium dark:text-claude-darkText text-claude-text">
-                {i18nService.t('coworkExecutionMode')}
-              </label>
-              <div className="space-y-2">
-                {([
-                  {
-                    value: 'auto',
-                    label: i18nService.t('coworkExecutionModeAuto'),
-                    hint: i18nService.t('coworkExecutionModeAutoHint'),
-                  },
-                  {
-                    value: 'local',
-                    label: i18nService.t('coworkExecutionModeLocal'),
-                    hint: i18nService.t('coworkExecutionModeLocalHint'),
-                  },
-                  {
-                    value: 'sandbox',
-                    label: i18nService.t('coworkExecutionModeSandbox'),
-                    hint: i18nService.t('coworkExecutionModeSandboxHint'),
-                  },
-                ] as Array<{ value: CoworkExecutionMode; label: string; hint: string }>).map((option) => {
-                  const isDisabled = option.value === 'sandbox' && coworkSandboxDisabled;
-                  return (
-                    <label
-                      key={option.value}
-                      className={`flex items-start gap-3 rounded-xl border px-3 py-2 text-sm transition-colors ${
-                        isDisabled
-                          ? 'cursor-not-allowed opacity-60 dark:border-claude-darkBorder border-claude-border'
-                          : 'cursor-pointer dark:border-claude-darkBorder border-claude-border hover:border-claude-accent'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="cowork-execution-mode"
-                        value={option.value}
-                        checked={coworkExecutionMode === option.value}
-                        onChange={() => setCoworkExecutionMode(option.value)}
-                        disabled={isDisabled}
-                        className="mt-1"
-                      />
-                      <span>
-                        <span className="block font-medium dark:text-claude-darkText text-claude-text">
-                          {option.label}
-                        </span>
-                        <span className="block text-xs dark:text-claude-darkTextSecondary text-claude-textSecondary">
-                          {option.hint}
-                        </span>
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-
-              {coworkSandboxStatusHint && (
-                <div className="text-xs dark:text-claude-darkTextSecondary text-claude-textSecondary">
-                  {coworkSandboxStatusHint}
-                </div>
-              )}
-
-              {coworkSandboxProgress && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs dark:text-claude-darkTextSecondary text-claude-textSecondary">
-                    <span>
-                      {coworkSandboxStageLabel}
-                    </span>
-                    {coworkSandboxPercent !== null && (
-                      <span>{coworkSandboxPercent}%</span>
-                    )}
-                  </div>
-                  <div className="h-2 rounded-full dark:bg-claude-darkBorder bg-claude-border overflow-hidden">
-                    <div
-                      className="h-full bg-claude-accent transition-all"
-                      style={{ width: `${coworkSandboxPercent ?? 0}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {coworkSandboxDisabled && coworkSandboxStatus?.supported && (
-                <button
-                  type="button"
-                  onClick={handleInstallCoworkSandbox}
-                  disabled={coworkSandboxInstalling || coworkSandboxLoading}
-                  className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-claude-accent hover:bg-claude-accentHover text-white text-sm font-medium transition-colors disabled:opacity-50 active:scale-[0.98]"
-                >
-                  {coworkSandboxInstalling ? i18nService.t('coworkSandboxInstalling') : i18nService.t('coworkSandboxInstall')}
-                </button>
-              )}
-
-              {coworkSandboxDisabled && !coworkSandboxStatus?.supported && (
-                <div className="text-xs text-blue-500 dark:text-blue-400">
-                  {i18nService.t('coworkSandboxSelectionBlocked')}
-                </div>
-              )}
-            </div>
-          </div>
-        );
 
       case 'coworkMemory':
         return (
@@ -2813,9 +2655,6 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice, onUpda
             </div>
           </div>
         );
-
-      case 'im':
-        return <IMSettings />;
 
       case 'about':
         return (

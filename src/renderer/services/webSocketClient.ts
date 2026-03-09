@@ -137,11 +137,6 @@ export const WS_EVENTS = {
   COWORK_PERMISSION: 'cowork:permission',
   COWORK_COMPLETE: 'cowork:complete',
   COWORK_ERROR: 'cowork:error',
-  COWORK_SANDBOX_PROGRESS: 'cowork:sandboxProgress',
-
-  // IM events
-  IM_STATUS_CHANGE: 'im:statusChange',
-  IM_MESSAGE_RECEIVED: 'im:messageReceived',
 
   // Scheduled task events
   TASK_STATUS_UPDATE: 'task:statusUpdate',
@@ -150,9 +145,8 @@ export const WS_EVENTS = {
   // Skill events
   SKILLS_CHANGED: 'skills:changed',
 
-  // App events
-  UPDATE_DOWNLOAD_PROGRESS: 'app:updateDownloadProgress',
-  WINDOW_STATE_CHANGED: 'app:windowStateChanged',
+  // File events
+  FILE_CHANGED: 'file:changed',
 } as const;
 
 // Singleton instance - URL will be configured based on environment

@@ -9,6 +9,7 @@ import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { store } from './store';
 import App from './App';
+import { initElectronShim } from '../renderer/services/electronShim';
 import '../renderer/index.css';
 
 const rootElement = document.getElementById('root');
@@ -17,6 +18,11 @@ if (!rootElement) {
 }
 
 try {
+  // Initialize electron shim and connect WebSocket
+  initElectronShim().catch((error) => {
+    console.error('[Web Entry] Failed to initialize electron shim:', error);
+  });
+
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
       <Provider store={store}>

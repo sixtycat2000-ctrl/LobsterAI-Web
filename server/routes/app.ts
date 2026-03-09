@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import type { RequestContext } from '../index';
+import type { RequestContext } from '../src/index';
 
 export function setupAppRoutes(app: Router) {
   const router = Router();
@@ -66,6 +66,12 @@ export function setupAppRoutes(app: Router) {
       nodeVersion: process.version,
       environment: process.env.NODE_ENV || 'development',
     });
+  });
+
+  // GET /api/app/workspace - Get workspace path
+  router.get('/workspace', (req: Request, res: Response) => {
+    const workspace = req.app.get('workspace') || process.env.HOME || '';
+    res.json({ path: workspace });
   });
 
   // Note: App update routes (appUpdate:download, appUpdate:install) are Electron-specific

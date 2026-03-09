@@ -25,7 +25,15 @@ export type WSMessageType =
   | 'api:stream:done'
   | 'api:stream:error'
   | 'api:stream:abort'
-  | 'appUpdate:downloadProgress';
+  | 'appUpdate:downloadProgress'
+  | 'file:changed';
+
+// File change event data structure
+export interface FileChangeEvent {
+  path: string;
+  type: 'create' | 'modify' | 'delete';
+  timestamp: number;
+}
 
 export interface WSMessage {
   type: WSMessageType;

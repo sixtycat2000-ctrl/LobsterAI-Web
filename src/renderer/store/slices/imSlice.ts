@@ -1,92 +1,49 @@
 /**
- * IM Slice
- * Redux slice for IM gateway state management
+ * Stub IM Redux slice for web builds
+ * IM features are not available in web version
  */
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type {
-  IMGatewayConfig,
-  IMGatewayStatus,
-  DingTalkConfig,
-  FeishuConfig,
-  QQConfig,
-  TelegramConfig,
-  DiscordConfig,
-  NimConfig,
-  XiaomifengConfig,
-  WecomConfig,
-  IMSettings,
-} from '../../types/im';
-import {
-  DEFAULT_IM_CONFIG,
-  DEFAULT_IM_STATUS,
-} from '../../types/im';
+import { createSlice } from '@reduxjs/toolkit';
 
-export interface IMState {
-  config: IMGatewayConfig;
-  status: IMGatewayStatus;
-  isLoading: boolean;
-  error: string | null;
+interface IMState {
+  dingtalk: { enabled: boolean; webhookUrl: string; appId: string; appSecret: string; error: string | null };
+  feishu: { enabled: boolean; webhookUrl: string; appId: string; appSecret: string; error: string | null };
+  qq: { enabled: boolean; webhookUrl: string; appId: string; appSecret: string; error: string | null };
+  telegram: { enabled: boolean; botToken: string; error: string | null };
+  discord: { enabled: boolean; webhookUrl: string; error: string | null };
+  nim: { enabled: boolean; appKey: string; appSecret: string; error: string | null };
+  xiaomifeng: { enabled: boolean; webhookUrl: string; error: string | null };
+  wecom: { enabled: boolean; webhookUrl: string; agentId: string; secret: string; error: string | null };
 }
 
 const initialState: IMState = {
-  config: DEFAULT_IM_CONFIG,
-  status: DEFAULT_IM_STATUS,
-  isLoading: false,
-  error: null,
+  dingtalk: { enabled: false, webhookUrl: '', appId: '', appSecret: '', error: null },
+  feishu: { enabled: false, webhookUrl: '', appId: '', appSecret: '', error: null },
+  qq: { enabled: false, webhookUrl: '', appId: '', appSecret: '', error: null },
+  telegram: { enabled: false, botToken: '', error: null },
+  discord: { enabled: false, webhookUrl: '', error: null },
+  nim: { enabled: false, appKey: '', appSecret: '', error: null },
+  xiaomifeng: { enabled: false, webhookUrl: '', error: null },
+  wecom: { enabled: false, webhookUrl: '', agentId: '', secret: '', error: null },
 };
 
 const imSlice = createSlice({
   name: 'im',
   initialState,
   reducers: {
-    setConfig: (state, action: PayloadAction<IMGatewayConfig>) => {
-      state.config = action.payload;
-    },
-    setDingTalkConfig: (state, action: PayloadAction<Partial<DingTalkConfig>>) => {
-      state.config.dingtalk = { ...state.config.dingtalk, ...action.payload };
-    },
-    setFeishuConfig: (state, action: PayloadAction<Partial<FeishuConfig>>) => {
-      state.config.feishu = { ...state.config.feishu, ...action.payload };
-    },
-    setQQConfig: (state, action: PayloadAction<Partial<QQConfig>>) => {
-      state.config.qq = { ...state.config.qq, ...action.payload };
-    },
-    setTelegramConfig: (state, action: PayloadAction<Partial<TelegramConfig>>) => {
-      state.config.telegram = { ...state.config.telegram, ...action.payload };
-    },
-    setDiscordConfig: (state, action: PayloadAction<Partial<DiscordConfig>>) => {
-      state.config.discord = { ...state.config.discord, ...action.payload };
-    },
-    setNimConfig: (state, action: PayloadAction<Partial<NimConfig>>) => {
-      state.config.nim = { ...state.config.nim, ...action.payload };
-    },
-    setXiaomifengConfig: (state, action: PayloadAction<Partial<XiaomifengConfig>>) => {
-      state.config.xiaomifeng = { ...state.config.xiaomifeng, ...action.payload };
-    },
-    setWecomConfig: (state, action: PayloadAction<Partial<WecomConfig>>) => {
-      state.config.wecom = { ...state.config.wecom, ...action.payload };
-    },
-    setIMSettings: (state, action: PayloadAction<Partial<IMSettings>>) => {
-      state.config.settings = { ...state.config.settings, ...action.payload };
-    },
-    setStatus: (state, action: PayloadAction<IMGatewayStatus>) => {
-      state.status = action.payload;
-    },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
-    },
-    setError: (state, action: PayloadAction<string | null>) => {
-      state.error = action.payload;
-    },
-    clearError: (state) => {
-      state.error = null;
-    },
+    setDingTalkConfig: (state, action) => ({ ...state, dingtalk: { ...state.dingtalk, ...action.payload } }),
+    setFeishuConfig: (state, action) => ({ ...state, feishu: { ...state.feishu, ...action.payload } }),
+    setQQConfig: (state, action) => ({ ...state, qq: { ...state.qq, ...action.payload } }),
+    setTelegramConfig: (state, action) => ({ ...state, telegram: { ...state.telegram, ...action.payload } }),
+    setDiscordConfig: (state, action) => ({ ...state, discord: { ...state.discord, ...action.payload } }),
+    setNimConfig: (state, action) => ({ ...state, nim: { ...state.nim, ...action.payload } }),
+    setXiaomifengConfig: (state, action) => ({ ...state, xiaomifeng: { ...state.xiaomifeng, ...action.payload } }),
+    setWecomConfig: (state, action) => ({ ...state, wecom: { ...state.wecom, ...action.payload } }),
+    clearError: (state) => state,
   },
 });
 
 export const {
-  setConfig,
   setDingTalkConfig,
   setFeishuConfig,
   setQQConfig,
@@ -95,10 +52,6 @@ export const {
   setNimConfig,
   setXiaomifengConfig,
   setWecomConfig,
-  setIMSettings,
-  setStatus,
-  setLoading,
-  setError,
   clearError,
 } = imSlice.actions;
 

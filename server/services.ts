@@ -11,7 +11,6 @@ import { CoworkStore } from '../src/main/coworkStore';
 import { CoworkRunner } from '../src/main/libs/coworkRunner';
 import { SkillManager } from '../src/main/skillManager';
 import { McpStore } from '../src/main/mcpStore';
-import { IMGatewayManager } from '../src/main/im';
 import { ScheduledTaskStore } from '../src/main/scheduledTaskStore';
 import { Scheduler } from '../src/main/libs/scheduler';
 import { APP_NAME } from '../src/main/appConstants';
@@ -37,7 +36,6 @@ let coworkStore: CoworkStore | null = null;
 let coworkRunner: CoworkRunner | null = null;
 let skillManager: SkillManager | null = null;
 let mcpStore: McpStore | null = null;
-let imGatewayManager: IMGatewayManager | null = null;
 let scheduledTaskStore: ScheduledTaskStore | null = null;
 let scheduler: Scheduler | null = null;
 
@@ -235,77 +233,6 @@ export const getMcpStore = (): McpStore => {
   return mcpStore;
 };
 
-export const getIMGatewayManager = (): IMGatewayManager => {
-  if (!imGatewayManager) {
-    const sqliteStore = getStore();
-    const runner = getCoworkRunner();
-    const store = getCoworkStore();
-
-    imGatewayManager = new IMGatewayManager(
-      sqliteStore.getDatabase(),
-      sqliteStore.getSaveFunction(),
-      {
-        coworkRunner: runner,
-        coworkStore: store,
-      }
-    );
-
-    // Initialize with LLM config provider
-    imGatewayManager.initialize({
-      getLLMConfig: async () => {
-        const appConfig = sqliteStore.get<any>('app_config');
-        if (!appConfig) return null;
-
-        const providers = appConfig.providers || {};
-        for (const [providerName, providerConfig] of Object.entries(providers) as [string, any][]) {
-          if (providerConfig.enabled && providerConfig.apiKey) {
-            const model = providerConfig.models?.[0]?.id;
-            return {
-              apiKey: providerConfig.apiKey,
-              baseUrl: providerConfig.baseUrl,
-              model: model,
-              provider: providerName,
-            };
-          }
-        }
-
-        if (appConfig.api?.key) {
-          return {
-            apiKey: appConfig.api.key,
-            baseUrl: appConfig.api.baseUrl,
-            model: appConfig.model?.defaultModel,
-          };
-        }
-
-        return null;
-      },
-      getSkillsPrompt: async () => {
-        return getSkillManager().buildAutoRoutingPrompt();
-      },
-    });
-
-    // Forward IM events via WebSocket
-    imGatewayManager.on('statusChange', (status) => {
-      broadcastToAll({
-        type: 'im:status:change',
-        data: status,
-      });
-    });
-
-    imGatewayManager.on('message', (message) => {
-      broadcastToAll({
-        type: 'im:message:received',
-        data: message,
-      });
-    });
-
-    imGatewayManager.on('error', ({ platform, error }) => {
-      console.error(`[IM Gateway] ${platform} error:`, error);
-    });
-  }
-  return imGatewayManager;
-};
-
 export const getScheduledTaskStore = (): ScheduledTaskStore => {
   if (!scheduledTaskStore) {
     const sqliteStore = getStore();
@@ -320,9 +247,6 @@ export const getScheduler = (): Scheduler => {
       scheduledTaskStore: getScheduledTaskStore(),
       coworkStore: getCoworkStore(),
       getCoworkRunner,
-      getIMGatewayManager: () => {
-        try { return getIMGatewayManager(); } catch { return null; }
-      },
       getSkillsPrompt: async () => {
         return getSkillManager().buildAutoRoutingPrompt();
       },
@@ -341,7 +265,6 @@ export interface RequestContext {
   coworkRunner: CoworkRunner;
   skillManager: SkillManager;
   mcpStore: McpStore;
-  imGatewayManager: IMGatewayManager;
   scheduledTaskStore: ScheduledTaskStore;
   scheduler: Scheduler;
   getWss: () => WebSocketServer;
@@ -355,7 +278,6 @@ export const buildRequestContext = (getWss: () => WebSocketServer): RequestConte
     coworkRunner: getCoworkRunner(),
     skillManager: getSkillManager(),
     mcpStore: getMcpStore(),
-    imGatewayManager: getIMGatewayManager(),
     scheduledTaskStore: getScheduledTaskStore(),
     scheduler: getScheduler(),
     getWss,
