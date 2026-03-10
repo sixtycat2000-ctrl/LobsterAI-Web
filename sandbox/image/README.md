@@ -32,8 +32,8 @@ Linux kernel), and produces a bootable qcow2 image with GRUB.
 Place the agent runner source under `sandbox/agent-runner`. The build copies it
 to `/opt/agent-runner` and (optionally) runs:
 
-- `npm ci --omit=dev`
-- `npm run build --if-present`
+- `pnpm install --prod`
+- `pnpm run build --if-present`
 
 Update the default entry point in `sandbox/image/overlay/etc/conf.d/agentd` if
 your runner uses a different path.

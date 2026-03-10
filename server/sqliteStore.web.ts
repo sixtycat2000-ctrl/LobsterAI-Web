@@ -76,15 +76,16 @@ export class SqliteStore {
     this.db.run(`
       CREATE TABLE IF NOT EXISTS cowork_sessions (
         id TEXT PRIMARY KEY,
-        title TEXT,
-        status TEXT DEFAULT 'idle',
-        pinned INTEGER DEFAULT 0,
-        cwd TEXT,
-        system_prompt TEXT,
-        execution_mode TEXT DEFAULT 'auto',
+        title TEXT NOT NULL,
+        claude_session_id TEXT,
+        status TEXT NOT NULL DEFAULT 'idle',
+        pinned INTEGER NOT NULL DEFAULT 0,
+        cwd TEXT NOT NULL,
+        system_prompt TEXT NOT NULL DEFAULT '',
+        execution_mode TEXT,
         active_skill_ids TEXT DEFAULT '[]',
-        created_at INTEGER,
-        updated_at INTEGER
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
       )
     `);
 
@@ -93,11 +94,12 @@ export class SqliteStore {
       CREATE TABLE IF NOT EXISTS cowork_messages (
         id TEXT PRIMARY KEY,
         session_id TEXT NOT NULL,
-        role TEXT NOT NULL,
-        content TEXT,
-        timestamp INTEGER,
+        type TEXT NOT NULL,
+        content TEXT NOT NULL,
         metadata TEXT,
-        FOREIGN KEY (session_id) REFERENCES cowork_sessions(id)
+        created_at INTEGER NOT NULL,
+        sequence INTEGER,
+        FOREIGN KEY (session_id) REFERENCES cowork_sessions(id) ON DELETE CASCADE
       )
     `);
 
@@ -105,20 +107,13 @@ export class SqliteStore {
     this.db.run(`
       CREATE TABLE IF NOT EXISTS mcp_servers (
         id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        description TEXT,
-        enabled INTEGER DEFAULT 1,
-        transport_type TEXT DEFAULT 'stdio',
-        command TEXT,
-        args TEXT DEFAULT '[]',
-        env TEXT DEFAULT '{}',
-        url TEXT,
-        headers TEXT DEFAULT '{}',
-        is_built_in INTEGER DEFAULT 0,
-        github_url TEXT,
-        registry_id TEXT,
-        created_at INTEGER,
-        updated_at INTEGER
+        name TEXT NOT NULL UNIQUE,
+        description TEXT NOT NULL DEFAULT '',
+        enabled INTEGER NOT NULL DEFAULT 1,
+        transport_type TEXT NOT NULL DEFAULT 'stdio',
+        config_json TEXT NOT NULL DEFAULT '{}',
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
       )
     `);
 
@@ -171,12 +166,107 @@ export class SqliteStore {
         status TEXT DEFAULT 'created',
         is_explicit INTEGER DEFAULT 0,
         source_session_id TEXT,
+        fingerprint TEXT NOT NULL,
         created_at INTEGER,
-        updated_at INTEGER
+        updated_at INTEGER,
+        last_used_at INTEGER
       )
     `);
 
+    // User memory sources table
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS user_memory_sources (
+        id TEXT PRIMARY KEY,
+        memory_id TEXT NOT NULL,
+        session_id TEXT,
+        message_id TEXT,
+        role TEXT NOT NULL DEFAULT 'system',
+        is_active INTEGER NOT NULL DEFAULT 1,
+        created_at INTEGER NOT NULL,
+        FOREIGN KEY (memory_id) REFERENCES user_memories(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Cowork config table
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS cowork_config (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    `);
+
+    // Migration: Fix mcp_servers table schema if it has old columns
+    this.migrateMcpServersTable();
+
     this.save();
+  }
+
+  private migrateMcpServersTable(): void {
+    // Check if mcp_servers has old schema (with 'command' column instead of 'config_json')
+    const colsResult = this.db.exec("PRAGMA table_info(mcp_servers);");
+    if (colsResult.length === 0) return; // Table doesn't exist yet
+
+    const columns = colsResult[0].values.map((row) => row[1] as string);
+
+    // If 'command' column exists but 'config_json' doesn't, we need to migrate
+    if (columns.includes('command') && !columns.includes('config_json')) {
+      console.log('[Migration] Migrating mcp_servers table to new schema...');
+
+      // Read existing data
+      const existingData = this.db.exec('SELECT * FROM mcp_servers;');
+      const oldRows = existingData[0]?.values || [];
+
+      // Drop old table and recreate with new schema
+      this.db.run('DROP TABLE mcp_servers;');
+      this.db.run(`
+        CREATE TABLE mcp_servers (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL UNIQUE,
+          description TEXT NOT NULL DEFAULT '',
+          enabled INTEGER NOT NULL DEFAULT 1,
+          transport_type TEXT NOT NULL DEFAULT 'stdio',
+          config_json TEXT NOT NULL DEFAULT '{}',
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        )
+      `);
+
+      // Migrate data - convert old columns to config_json
+      const colNames = existingData[0]?.columns || [];
+      for (const row of oldRows) {
+        const rowData = Object.fromEntries(
+          colNames.map((col, i) => [col, row[i]])
+        ) as Record<string, unknown>;
+
+        const configJson: Record<string, unknown> = {};
+        if (rowData.command) configJson.command = rowData.command;
+        if (rowData.args) configJson.args = JSON.parse(rowData.args as string || '[]');
+        if (rowData.env) configJson.env = JSON.parse(rowData.env as string || '{}');
+        if (rowData.url) configJson.url = rowData.url;
+        if (rowData.headers) configJson.headers = JSON.parse(rowData.headers as string || '{}');
+        if (rowData.is_built_in) configJson.isBuiltIn = true;
+        if (rowData.github_url) configJson.githubUrl = rowData.github_url;
+        if (rowData.registry_id) configJson.registryId = rowData.registry_id;
+
+        this.db.run(
+          `INSERT INTO mcp_servers (id, name, description, enabled, transport_type, config_json, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            rowData.id as string,
+            rowData.name as string,
+            (rowData.description as string) || '',
+            (rowData.enabled as number) ?? 1,
+            (rowData.transport_type as string) || 'stdio',
+            JSON.stringify(configJson),
+            (rowData.created_at as number) || Date.now(),
+            (rowData.updated_at as number) || Date.now(),
+          ]
+        );
+      }
+
+      console.log(`[Migration] Migrated ${oldRows.length} MCP server(s)`);
+    }
   }
 
   getDatabase(): Database {

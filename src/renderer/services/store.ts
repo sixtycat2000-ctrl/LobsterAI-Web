@@ -8,8 +8,8 @@ export interface LocalStore {
 class LocalStoreService implements LocalStore {
   async getItem<T>(key: string): Promise<T | null> {
     try {
-      const value = await window.electron.store.get(key);
-      return value || null;
+      const response = await window.electron.store.get<T>(key);
+      return response?.success ? response.value ?? null : null;
     } catch (error) {
       console.error('Failed to get item from store:', error);
       return null;

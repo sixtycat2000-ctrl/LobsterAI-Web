@@ -47,7 +47,14 @@ const SkillsManager: React.FC = () => {
   const addSkillButtonRef = useRef<HTMLButtonElement>(null);
   const githubImportInputRef = useRef<HTMLInputElement>(null);
 
+  const skillsLoadedRef = useRef(false);
+  const marketplaceLoadedRef = useRef(false);
+
   useEffect(() => {
+    // Prevent duplicate requests in React StrictMode
+    if (skillsLoadedRef.current) return;
+    skillsLoadedRef.current = true;
+
     let isActive = true;
     const loadSkills = async () => {
       const loadedSkills = await skillService.loadSkills();
@@ -69,6 +76,10 @@ const SkillsManager: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    // Prevent duplicate requests in React StrictMode
+    if (marketplaceLoadedRef.current) return;
+    marketplaceLoadedRef.current = true;
+
     let isActive = true;
     setIsLoadingMarketplace(true);
     skillService.fetchMarketplaceSkills().then((data) => {

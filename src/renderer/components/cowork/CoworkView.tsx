@@ -65,7 +65,13 @@ const CoworkView: React.FC<CoworkViewProps> = ({ onRequestAppSettings, onShowSki
     return `${baseNotice} (${error})`;
   };
 
+  const initRef = useRef(false);
+
   useEffect(() => {
+    // Prevent duplicate requests in React StrictMode
+    if (initRef.current) return;
+    initRef.current = true;
+
     const init = async () => {
       await coworkService.init();
       // Load quick actions with localization
@@ -294,6 +300,31 @@ const CoworkView: React.FC<CoworkViewProps> = ({ onRequestAppSettings, onShowSki
       }
     }
   }, [activeSkillIds]);
+
+  // Subscribe to session updates via WebSocket when session changes
+  const currentSessionId = useSelector((state: RootState) => state.cowork.currentSessionId);
+  const prevSessionIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    // Unsubscribe from previous session
+    if (prevSessionIdRef.current && prevSessionIdRef.current !== currentSessionId) {
+      window.electron.cowork.unsubscribeFromSession(prevSessionIdRef.current);
+    }
+
+    // Subscribe to new session
+    if (currentSessionId && !currentSessionId.startsWith('temp-')) {
+      window.electron.cowork.subscribeToSession(currentSessionId);
+    }
+
+    prevSessionIdRef.current = currentSessionId;
+
+    // Cleanup on unmount
+    return () => {
+      if (currentSessionId && !currentSessionId.startsWith('temp-')) {
+        window.electron.cowork.unsubscribeFromSession(currentSessionId);
+      }
+    };
+  }, [currentSessionId]);
 
   // Handle prompt selection from QuickAction
   const handleQuickActionPromptSelect = (prompt: string) => {

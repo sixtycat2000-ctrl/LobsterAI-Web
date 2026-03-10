@@ -14,7 +14,10 @@ const translations: Record<LanguageType, Record<string, string>> = {
     user: '用户',
     login: '登录',
     inDevelopment: '正在开发中',
-    
+    show: '显示',
+    hide: '隐藏',
+    clear: '清除',
+
     // 设置
     settings: '设置',
     general: '通用',
@@ -84,6 +87,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     connectionSuccess: '连接成功',
     connectionFailed: '连接失败',
     noModelsConfigured: '请先添加模型',
+    configureModelsInSettings: '请先在设置中配置模型',
     apiFormat: 'API 格式',
     apiFormatNative: 'Anthropic 兼容',
     apiFormatOpenAI: 'OpenAI 兼容',
@@ -790,7 +794,10 @@ const translations: Record<LanguageType, Record<string, string>> = {
     user: 'User',
     login: 'Login',
     inDevelopment: 'In development',
-    
+    show: 'Show',
+    hide: 'Hide',
+    clear: 'Clear',
+
     // Settings
     settings: 'Settings',
     general: 'General',
@@ -860,6 +867,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     connectionSuccess: 'Connection successful',
     connectionFailed: 'Connection failed',
     noModelsConfigured: 'Please add a model first',
+    configureModelsInSettings: 'Please configure models in settings first',
     apiFormat: 'API Format',
     apiFormatNative: 'Anthropic Compatible',
     apiFormatOpenAI: 'OpenAI Compatible',

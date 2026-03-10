@@ -129,18 +129,18 @@ export class WebSocketClient {
   }
 }
 
-// WebSocket event types (matching IPC events)
+// WebSocket event types (matching server events)
 export const WS_EVENTS = {
-  // Cowork events
-  COWORK_MESSAGE: 'cowork:message',
-  COWORK_MESSAGE_UPDATE: 'cowork:messageUpdate',
-  COWORK_PERMISSION: 'cowork:permission',
-  COWORK_COMPLETE: 'cowork:complete',
-  COWORK_ERROR: 'cowork:error',
+  // Cowork events (matching server websocket.ts)
+  COWORK_MESSAGE: 'cowork:stream:message',
+  COWORK_MESSAGE_UPDATE: 'cowork:stream:messageUpdate',
+  COWORK_PERMISSION: 'cowork:stream:permission',
+  COWORK_COMPLETE: 'cowork:stream:complete',
+  COWORK_ERROR: 'cowork:stream:error',
 
   // Scheduled task events
-  TASK_STATUS_UPDATE: 'task:statusUpdate',
-  TASK_RUN_UPDATE: 'task:runUpdate',
+  TASK_STATUS_UPDATE: 'scheduledTask:statusUpdate',
+  TASK_RUN_UPDATE: 'scheduledTask:runUpdate',
 
   // Skill events
   SKILLS_CHANGED: 'skills:changed',

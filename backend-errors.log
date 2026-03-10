@@ -1,0 +1,462 @@
+=== Backend Log Monitor Started at Tue Mar 10 00:48:36 CST 2026 ===
+Server: http://localhost:3001
+
+
+> lobsterai@0.3.0 server:dev /Users/yuli/git/test/projects/LobsterAI-Web
+> tsx watch server/src/cli.ts
+
+🦞 Starting LobsterAI...
+   Port: 3001
+   Host: localhost
+   Workspace: /Users/yuli
+[Server] LobsterAI Web Server running on http://localhost:3001
+[Server] WebSocket server initialized
+[Server] User data path: /Users/yuli/.lobsterai/web
+[Server] Workspace: /Users/yuli
+[Server] Environment: development
+
+✅ LobsterAI is running at http://localhost:3001
+   Opening browser...
+[API] GET / 404 4ms
+[API] GET /health 200 2ms
+[API] GET /health 200 0ms
+[API] GET /info 200 6ms
+[API] GET /version 200 0ms
+[API] GET / 200 23ms
+[API] GET / 500 1ms
+[API] GET /sessions 200 2ms
+[API] GET /config 200 2ms
+[API] GET /health 200 0ms
+[API] HEAD /ws 404 1ms
+[API] GET /list 200 2ms
+[API] GET /test_key_monitoring 200 1ms
+[API] Unhandled error: SyntaxError: Unterminated string in JSON at position 46 (line 1 column 47)
+    at JSON.parse (<anonymous>)
+    at parse (/Users/yuli/git/test/projects/LobsterAI-Web/node_modules/.pnpm/body-parser@1.20.4/node_modules/body-parser/lib/types/json.js:92:19)
+    at /Users/yuli/git/test/projects/LobsterAI-Web/node_modules/.pnpm/body-parser@1.20.4/node_modules/body-parser/lib/read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+    at invokeCallback (/Users/yuli/git/test/projects/LobsterAI-Web/node_modules/.pnpm/raw-body@2.5.3/node_modules/raw-body/index.js:238:16)
+    at done (/Users/yuli/git/test/projects/LobsterAI-Web/node_modules/.pnpm/raw-body@2.5.3/node_modules/raw-body/index.js:227:7)
+    at IncomingMessage.onEnd (/Users/yuli/git/test/projects/LobsterAI-Web/node_modules/.pnpm/raw-body@2.5.3/node_modules/raw-body/index.js:287:7)
+    at IncomingMessage.emit (node:events:508:28)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  expose: true,
+  statusCode: 400,
+  status: 400,
+  body: '{"value": "monitoring test", "timestamp": "Tue',
+  type: 'entity.parse.failed'
+}
+[WebSocket] Client connected: c7daebd9-c0b1-478e-a92c-6d55542e2822
+[API] GET /app_config 200 3ms
+[API] POST /app_config 200 8ms
+[API] GET / 304 2ms
+[API] GET /config 304 2ms
+[API] POST /app_config 200 3ms
+[API] GET /version 304 0ms
+[API] GET /config 304 1ms
+[API] GET /sessions 304 0ms
+[API] GET /sessions 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET / 304 8ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 1ms
+[API] GET / 304 6ms
+[API] GET /workspace 304 1ms
+[API] GET /version 304 1ms
+[WebSocket] Client disconnected: c7daebd9-c0b1-478e-a92c-6d55542e2822
+[WebSocket] Client connected: 3ed18f09-c4af-4522-9fa4-c07559cce9e7
+[API] GET /app_config 200 1ms
+[API] POST /app_config 200 2ms
+[API] GET / 304 1ms
+[API] POST /app_config 200 3ms
+[API] GET /config 304 1ms
+[API] GET /version 304 0ms
+[API] GET /config 304 1ms
+[API] GET /sessions 304 1ms
+[API] GET /sessions 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api-config/check 304 2ms
+[API] GET / 304 4ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 0ms
+[API] GET / 304 22ms
+[API] GET /workspace 304 0ms
+[API] GET /version 304 1ms
+[WebSocket] Client connected: 342b2a19-e197-44fa-b9d7-767f9a59a7d2
+[API] GET /app_config 200 1ms
+[API] POST /app_config 200 3ms
+[API] GET / 200 1ms
+[API] GET /config 200 1ms
+[API] POST /app_config 200 2ms
+[API] GET /config 304 1ms
+[API] GET /version 200 0ms
+[API] GET /sessions 200 2ms
+[API] GET /sessions 304 0ms
+[API] GET /api-config/check 200 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET / 200 4ms
+[API] GET /workspace 200 0ms
+[API] GET /version 304 0ms
+[API] GET / 304 6ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 1ms
+[WebSocket] Client disconnected: 342b2a19-e197-44fa-b9d7-767f9a59a7d2
+[API] POST /app_config 200 3ms
+[API] GET /api/cowork/cwds/recent 404 1ms
+[API] GET / 304 4ms
+[API] GET / 304 4ms
+[WebSocket] Client disconnected: 3ed18f09-c4af-4522-9fa4-c07559cce9e7
+[WebSocket] Client connected: 4f0eade7-5171-42ab-96f5-b187c612a235
+[API] GET /app_config 200 1ms
+[API] POST /app_config 200 3ms
+[API] GET / 304 1ms
+[API] GET /config 304 1ms
+[API] POST /app_config 200 4ms
+[API] GET /version 304 0ms
+[API] GET /config 304 2ms
+[API] GET /sessions 304 14ms
+[API] GET /sessions 304 0ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api-config/check 304 2ms
+[API] GET / 304 7ms
+[API] GET /version 304 1ms
+[API] GET / 304 7ms
+[API] GET /workspace 304 0ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 0ms
+[WebSocket] Client disconnected: 4f0eade7-5171-42ab-96f5-b187c612a235
+[WebSocket] Client connected: de8d8a8b-9b28-4738-9f80-6a4323b3dd65
+[API] GET /app_config 200 1ms
+[API] POST /app_config 200 4ms
+[API] GET / 304 1ms
+[API] GET /config 304 1ms
+[API] POST /app_config 200 3ms
+[API] GET /config 304 1ms
+[API] GET /version 304 1ms
+[API] GET /sessions 304 1ms
+[API] GET /sessions 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET / 304 6ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 0ms
+[API] GET / 304 3ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 0ms
+[WebSocket] Client disconnected: de8d8a8b-9b28-4738-9f80-6a4323b3dd65
+[WebSocket] Client connected: 48401bcf-13b1-4e9b-b8d0-c0987c42a4eb
+[API] GET /app_config 200 2ms
+[API] POST /app_config 200 4ms
+[API] GET / 304 1ms
+[API] GET /config 304 1ms
+[API] POST /app_config 200 3ms
+[API] GET /version 304 0ms
+[API] GET /config 304 1ms
+[API] GET /sessions 304 1ms
+[API] GET /sessions 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET / 304 4ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 1ms
+[API] GET / 304 3ms
+[API] GET /workspace 304 0ms
+[API] GET /version 304 0ms
+[WebSocket] Client disconnected: 48401bcf-13b1-4e9b-b8d0-c0987c42a4eb
+[WebSocket] Client connected: 8320190a-9c71-44fd-94d4-f9b6dca9b777
+[API] GET /app_config 200 1ms
+[API] POST /app_config 200 5ms
+[API] GET / 304 1ms
+[API] GET /config 304 1ms
+[API] POST /app_config 200 19ms
+[API] GET /version 304 0ms
+[API] GET /config 304 1ms
+[API] GET /sessions 304 0ms
+[API] GET /sessions 304 0ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET / 304 3ms
+[API] GET /version 304 1ms
+[API] GET /workspace 304 0ms
+[API] GET / 304 3ms
+[API] GET /version 304 1ms
+[API] GET /workspace 304 0ms
+[WebSocket] Client disconnected: 8320190a-9c71-44fd-94d4-f9b6dca9b777
+[WebSocket] Client connected: 92860d67-57de-47f1-be99-389f133598c8
+[API] GET /app_config 200 2ms
+[API] POST /app_config 200 4ms
+[API] GET / 304 2ms
+[API] GET /config 304 2ms
+[API] GET /version 304 0ms
+[API] POST /app_config 200 7ms
+[API] GET /config 304 2ms
+[API] GET /sessions 304 1ms
+[API] GET /sessions 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api-config/check 304 0ms
+[API] GET / 304 4ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 0ms
+[API] GET / 304 3ms
+[API] GET /workspace 304 0ms
+[API] GET /version 304 0ms
+[WebSocket] Client disconnected: 92860d67-57de-47f1-be99-389f133598c8
+[WebSocket] Client connected: 75a452e3-46e7-4d44-8fb1-5d4a7fc18183
+[API] GET /app_config 200 1ms
+[API] POST /app_config 200 3ms
+[API] GET / 304 1ms
+[API] GET /config 304 1ms
+[API] POST /app_config 200 6ms
+[API] GET /version 304 1ms
+[API] GET /config 304 2ms
+[API] GET /sessions 304 1ms
+[API] GET /sessions 304 0ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET / 304 19ms
+[API] GET /version 304 0ms
+[API] GET / 304 3ms
+[API] GET /workspace 304 1ms
+[API] GET /version 304 1ms
+[API] GET /workspace 304 1ms
+[WebSocket] Client disconnected: 75a452e3-46e7-4d44-8fb1-5d4a7fc18183
+[WebSocket] Client connected: 5069db92-8490-4b80-be23-7cc44cf6b757
+[API] GET /app_config 200 2ms
+[API] POST /app_config 200 3ms
+[API] GET / 304 1ms
+[API] GET /config 304 1ms
+[API] POST /app_config 200 4ms
+[API] GET /version 304 0ms
+[API] GET /config 304 1ms
+[API] GET /sessions 304 1ms
+[API] GET /sessions 304 0ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api-config/check 304 2ms
+[API] GET / 304 4ms
+[API] GET /version 304 1ms
+[API] GET /workspace 304 0ms
+[API] GET / 304 5ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 0ms
+[API] GET /api/mcp/servers 404 1ms
+[API] GET /api/mcp/servers 404 1ms
+[API] GET /marketplace 200 149ms
+[API] GET /marketplace 304 44ms
+[API] GET / 304 0ms
+[API] GET / 304 0ms
+[API] GET /version 304 1ms
+[API] GET /workspace 304 0ms
+[API] GET /workspace 304 0ms
+[API] GET /version 304 0ms
+[API] GET / 304 0ms
+[API] GET /version 304 1ms
+[API] GET /workspace 304 0ms
+[API] POST /app_config 200 2ms
+[API] GET /version 304 0ms
+[WebSocket] Client disconnected: 5069db92-8490-4b80-be23-7cc44cf6b757
+[WebSocket] Client connected: b76ee742-1501-4247-9ba1-fffd77718aa2
+[API] GET /app_config 200 0ms
+[API] POST /app_config 200 1ms
+[API] GET / 304 1ms
+[API] GET /config 304 2ms
+[API] POST /app_config 200 1ms
+[API] GET /version 304 0ms
+[API] GET /config 304 1ms
+[API] GET /sessions 304 0ms
+[API] GET /sessions 304 1ms
+[API] GET /api-config/check 304 0ms
+[API] GET /api-config/check 304 1ms
+[API] GET / 304 5ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 1ms
+[API] GET / 304 3ms
+[API] GET /workspace 304 0ms
+[API] GET /version 304 0ms
+[WebSocket] Client disconnected: b76ee742-1501-4247-9ba1-fffd77718aa2
+[WebSocket] Client connected: e92aaff1-8f55-4ebe-8ab8-005257977fc0
+[API] GET /app_config 200 1ms
+[API] GET / 304 0ms
+[API] GET /config 304 0ms
+[API] POST /app_config 200 2ms
+[API] GET /version 304 0ms
+[API] GET /config 304 1ms
+[API] GET /sessions 304 0ms
+[API] GET /sessions 304 0ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET / 304 4ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 0ms
+[API] GET / 304 4ms
+[API] GET /version 304 1ms
+[API] GET /workspace 304 0ms
+[WebSocket] Client disconnected: e92aaff1-8f55-4ebe-8ab8-005257977fc0
+[WebSocket] Client connected: 13b36c53-4271-4d8b-b5df-80cd883d27e3
+[API] GET /app_config 200 0ms
+[API] GET / 304 0ms
+[API] GET /config 304 0ms
+[API] POST /app_config 200 3ms
+[API] GET /version 304 1ms
+[API] GET /config 304 2ms
+[API] GET /sessions 304 0ms
+[API] GET /sessions 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET / 304 9ms
+[API] GET /version 304 3ms
+[API] GET / 304 4ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 1ms
+[API] GET /workspace 304 1ms
+[WebSocket] Client disconnected: 13b36c53-4271-4d8b-b5df-80cd883d27e3
+[WebSocket] Client connected: 2183af84-3e48-4c17-a14c-ca8e98201787
+[API] GET /app_config 200 0ms
+[API] GET / 304 0ms
+[API] GET /config 304 1ms
+[API] POST /app_config 200 3ms
+[API] GET /version 304 0ms
+[API] GET /config 304 1ms
+[API] GET /sessions 304 16ms
+[API] GET /sessions 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET / 304 4ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 0ms
+[API] GET / 304 3ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 0ms
+[WebSocket] Client disconnected: 2183af84-3e48-4c17-a14c-ca8e98201787
+[WebSocket] Client connected: 6aa2bf0e-2193-425e-9ffb-45114c7e4d73
+[API] GET /app_config 200 1ms
+[API] GET / 304 0ms
+[API] GET /config 304 1ms
+[API] POST /app_config 200 4ms
+[API] GET /version 304 1ms
+[API] GET /config 304 0ms
+[API] GET /sessions 304 0ms
+[API] GET /sessions 304 0ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET / 304 6ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 1ms
+[API] GET / 304 4ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 0ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 1ms
+[API] GET /workspace 304 0ms
+[API] GET /version 304 0ms
+[API] POST /app_config 200 5ms
+[API] GET /version 304 1ms
+[API] GET /workspace 304 1ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 1ms
+[API] POST /app_config 200 2ms
+[API] POST /app_config 200 2ms
+[API] GET /api-config/check 200 0ms
+[API] GET /api/skills/auto-routing-prompt 404 0ms
+[API] GET / 304 3ms
+[API] GET / 304 3ms
+[API] POST /api/cowork/sessions/start 404 0ms
+[WebSocket] Client disconnected: 6aa2bf0e-2193-425e-9ffb-45114c7e4d73
+[WebSocket] Client connected: 4b8b211f-3b46-4d2d-b175-6df5d8fd3df6
+[API] GET /app_config 200 0ms
+[API] GET / 304 0ms
+[API] GET /config 304 1ms
+[API] GET /version 304 0ms
+[API] GET /config 304 1ms
+[API] GET /sessions 304 0ms
+[API] GET /sessions 304 0ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET / 304 2ms
+[API] GET / 304 5ms
+[WebSocket] Client disconnected: 4b8b211f-3b46-4d2d-b175-6df5d8fd3df6
+[WebSocket] Client connected: d2a6103b-155b-4748-a0b2-9224aa2bef59
+[API] GET /app_config 304 1ms
+[API] GET / 304 1ms
+[API] GET /config 304 0ms
+[API] GET /version 304 1ms
+[API] GET /config 304 0ms
+[API] GET /sessions 304 1ms
+[API] GET /sessions 304 1ms
+[API] GET /api-config/check 304 0ms
+[API] GET /api-config/check 304 3ms
+[API] GET / 304 4ms
+[API] GET / 304 4ms
+[API] GET /version 304 1ms
+[API] GET /workspace 304 1ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 1ms
+[API] GET /memory/entries 500 1ms
+[API] GET /memory/stats 304 1ms
+[API] POST /app_config 200 2ms
+[API] GET /api/cowork/cwds/recent 404 1ms
+[API] GET /api/cowork/cwds/recent 404 1ms
+[API] GET /api/cowork/cwds/recent 404 1ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api/skills/auto-routing-prompt 404 0ms
+[API] GET / 304 5ms
+[API] POST /api/cowork/sessions/start 404 2ms
+[API] GET / 304 4ms
+[API] GET / 304 1ms
+[API] GET / 304 1ms
+[API] GET /runs/all 200 1ms
+[API] GET /runs/all 304 1ms
+[API] GET /api/mcp/servers 404 0ms
+[API] GET /api/mcp/servers 404 0ms
+[API] GET /marketplace 304 216ms
+[API] GET /marketplace 304 47ms
+[API] GET / 304 4ms
+[API] GET / 304 4ms
+[API] GET / 304 0ms
+[API] GET / 304 0ms
+[API] GET /api-config/check 304 1ms
+[API] GET /api-config/check 304 0ms
+[API] GET / 304 5ms
+[API] GET / 304 3ms
+[API] GET /version 304 1ms
+[API] GET /workspace 304 0ms
+[API] GET /version 304 0ms
+[API] GET /workspace 304 1ms
+[WebSocket] Client disconnected: d2a6103b-155b-4748-a0b2-9224aa2bef59
+[WebSocket] Client connected: f9f376cc-f370-4458-979e-0f0206b7e3ee
+[API] GET /app_config 200 0ms
+[API] GET / 304 1ms
+[API] GET /config 304 1ms
+[API] GET /version 304 1ms
+[API] GET /config 304 0ms
+[API] GET /sessions 304 0ms
+[API] GET /sessions 304 1ms
+[API] GET /api-config/check 304 0ms
+[API] GET /api-config/check 304 0ms
+[API] GET / 304 4ms
+[API] GET / 304 3ms
+[API] POST /app_config 200 1ms
+[API] POST /app_config 200 2ms
+[API] GET /api/cowork/cwds/recent 404 0ms
+[WebSocket] Client disconnected: f9f376cc-f370-4458-979e-0f0206b7e3ee
+[WebSocket] Client connected: 2b0a9e92-5388-4aa0-99a1-95b07d4eddb1
+[API] GET /app_config 200 0ms
+[API] GET / 304 1ms
+[API] GET /version 304 3ms
+[API] GET /config 304 29ms
+[API] GET /config 304 0ms
+[API] GET /sessions 304 1ms
+[API] GET /sessions 304 1ms
+[API] GET /api-config/check 304 0ms
+[API] GET /api-config/check 304 0ms
+[API] GET / 304 6ms
+[API] GET / 304 3ms
+[API] GET / 404 0ms
+[API] GET /health 200 1ms
+[API] GET / 304 18ms
+[API] GET /version 304 0ms
+[API] GET /api-config/check 304 0ms
+10:29:01 PM [tsx] Previous process hasn't exited yet. Force killing...
+10:29:06 PM [tsx] Process didn't exit in 5s. Force killing...
+10:29:06 PM [tsx] Process didn't exit in 5s. Force killing...

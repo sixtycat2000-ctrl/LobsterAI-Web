@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { setViewMode, selectTask } from '../../store/slices/scheduledTaskSlice';
@@ -37,6 +37,7 @@ const ScheduledTasksView: React.FC<ScheduledTasksViewProps> = ({
   const selectedTask = selectedTaskId ? tasks.find((t) => t.id === selectedTaskId) ?? null : null;
   const [activeTab, setActiveTab] = useState<TabType>('tasks');
   const [deleteTaskInfo, setDeleteTaskInfo] = useState<{ id: string; name: string } | null>(null);
+  const tasksLoadedRef = useRef(false);
 
   const handleRequestDelete = useCallback((taskId: string, taskName: string) => {
     setDeleteTaskInfo({ id: taskId, name: taskName });
@@ -59,6 +60,9 @@ const ScheduledTasksView: React.FC<ScheduledTasksViewProps> = ({
   }, []);
 
   useEffect(() => {
+    // Prevent duplicate requests in React StrictMode
+    if (tasksLoadedRef.current) return;
+    tasksLoadedRef.current = true;
     scheduledTaskService.loadTasks();
   }, []);
 

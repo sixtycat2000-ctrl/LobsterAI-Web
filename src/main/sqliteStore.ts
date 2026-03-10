@@ -1,4 +1,4 @@
-import { app } from 'electron';
+import { app } from '../../server/shims/electron';
 import { EventEmitter } from 'events';
 import crypto from 'crypto';
 import fs from 'fs';

@@ -1,4 +1,4 @@
-import { app } from 'electron';
+import { app } from '../../../server/shims/electron';
 import fs from 'fs';
 import path from 'path';
 

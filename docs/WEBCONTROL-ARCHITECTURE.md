@@ -211,14 +211,14 @@ POST   /api/shell/open                   # 打开外部链接
 
 ```bash
 # 开发模式
-npm run web:dev           # 启动主服务 + Vite 开发服务器
+pnpm run web:dev           # 启动主服务 + Vite 开发服务器
 
 # 生产模式
-npm run web:build         # 构建 WebChat
-npm run web:start         # 启动主服务（serve 构建产物）
+pnpm run web:build         # 构建 WebChat
+pnpm run web:start         # 启动主服务（serve 构建产物）
 
 # 仅后端
-npm run server:dev        # 仅启动后端服务
+pnpm run server:dev        # 仅启动后端服务
 ```
 
 ## 文件结构

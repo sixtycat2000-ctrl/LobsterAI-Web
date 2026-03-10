@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'electron';
+import { BrowserWindow } from '../../../server/shims/electron';
 import { ScheduledTaskStore, ScheduledTask, ScheduledTaskRun, Schedule, NotifyPlatform } from '../scheduledTaskStore';
 import type { CoworkStore } from '../coworkStore';
 import type { CoworkRunner } from './coworkRunner';

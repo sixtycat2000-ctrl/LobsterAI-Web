@@ -38,13 +38,13 @@
 ### Prerequisites
 
 - **Node.js** >= 20
-- **npm** or **npx**
+- **pnpm**
 
 ### Installation
 
 ```bash
-# Install globally via npm
-npm install -g lobsterai
+# Install globally via pnpm
+pnpm install -g lobsterai
 
 # Or use npx without installing
 npx lobsterai
@@ -92,19 +92,19 @@ git clone https://github.com/sixtycat2000-ctrl/LobsterAI-Web.git
 cd LobsterAI-Web
 
 # Install dependencies
-npm install
+pnpm install
 
 # Build the web UI
-npm run build:web
+pnpm run build:web
 
 # Build the server
-npm run build:server
+pnpm run build:server
 
 # Run the server
-npm start
+pnpm start
 
 # Or run in development mode
-npm run server:dev
+pnpm run server:dev
 ```
 
 ## Architecture
@@ -253,19 +253,19 @@ All data is stored in a local SQLite database (`~/.lobsterai/lobsterai.sqlite`):
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Development server (hot reload)
-npm run dev
+pnpm run dev
 
 # Build for production
-npm run build
+pnpm run build
 
 # Run tests
-npm test
+pnpm test
 
 # Lint code
-npm run lint
+pnpm run lint
 ```
 
 ## Contributing

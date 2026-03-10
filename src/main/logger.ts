@@ -1,78 +1,109 @@
 /**
- * Logger module using electron-log
- * Intercepts console.* methods and writes to file + console simultaneously.
- *
- * Log file locations:
- *   macOS:   ~/Library/Logs/LobsterAI/main.log
- *   Windows: %USERPROFILE%\AppData\Roaming\LobsterAI\logs\main.log
- *   Linux:   ~/.config/LobsterAI/logs/main.log
+ * Logger module for web builds
+ * Simple console-based logging that writes to file + console
  */
 
-import log from 'electron-log/main';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import util from 'util';
 
-/**
- * Initialize logging system.
- * Must be called early in main process, before any console output.
- */
-export function initLogger(): void {
-  // File transport config
-  log.transports.file.level = 'debug';
-  log.transports.file.maxSize = 10 * 1024 * 1024; // 10MB, then rotate to main.old.log
-  log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}';
+let logStream: fs.WriteStream | null;
 
-  // Console transport config
-  log.transports.console.level = 'debug';
-  log.transports.console.format = '{text}';
-
-  // Intercept console.* methods so all existing console.log/error/warn
-  // across 25+ files are automatically captured without any code changes.
-  // electron-log correctly serializes Error objects (with stack traces),
-  // unlike JSON.stringify which outputs '{}' for Error instances.
-  const originalLog = console.log;
-  const originalError = console.error;
-  const originalWarn = console.warn;
-  const originalInfo = console.info;
-  const originalDebug = console.debug;
-
-  console.log = (...args: any[]) => {
-    originalLog.apply(console, args);
-    log.info(...args);
-  };
-  console.error = (...args: any[]) => {
-    originalError.apply(console, args);
-    log.error(...args);
-  };
-  console.warn = (...args: any[]) => {
-    originalWarn.apply(console, args);
-    log.warn(...args);
-  };
-  console.info = (...args: any[]) => {
-    originalInfo.apply(console, args);
-    log.info(...args);
-  };
-  console.debug = (...args: any[]) => {
-    originalDebug.apply(console, args);
-    log.debug(...args);
-  };
-
-  // Disable electron-log's own console transport to avoid double printing
-  // (we already call originalLog above, so electron-log only needs to write to file)
-  log.transports.console.level = false;
-
-  // Log startup marker
-  log.info('='.repeat(60));
-  log.info(`LobsterAI started (${process.platform} ${process.arch})`);
-  log.info('='.repeat(60));
+// Get log directory
+function getLogDir(): string {
+  const appName = process.env.npm_package_name || 'LobsterAI';
+  return path.join(os.homedir(), '.lobsterai', 'logs');
 }
 
-/**
- * Get the current log file path
- */
+// Get log file path
 export function getLogFilePath(): string {
-  return log.transports.file.getFile().path;
+  const appName = process.env.npm_package_name || 'LobsterAI';
+  const logDir = getLogDir();
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+  return path.join(logDir, `${appName}-main.log`);
 }
 
-/**
- * Log instance for direct usage if needed
- */
-export { log };
+// Get log stream
+function getLogStream(): fs.WriteStream | null {
+  if (!logStream) {
+    const logFile = getLogFilePath();
+    logStream = fs.createWriteStream(logFile, { flags: 'a' });
+  }
+  return logStream;
+}
+
+// Initialize logging system
+export function initLogger(): void {
+  // Intercept console.* methods
+  const originalMethods = {
+    log: console.log,
+    error: console.error,
+    warn: console.warn,
+    info: console.info,
+    debug: console.debug,
+  };
+
+  // Override console methods
+  Object.keys(originalMethods).forEach((method) => {
+    (console as any)[method] = (...args: any[]) => {
+      // Write to log file
+      const message = args.length > 0 ? util.format(args[0]) : '';
+      const timestamp = new Date().toISOString();
+      const logLine = `[${timestamp}] [${method.toUpperCase()}] ${message}\n`;
+      const stream = getLogStream();
+      if (stream) {
+        stream.write(logLine);
+      }
+
+      // Also output to console
+      originalMethods[method as keyof Console](...args as any[]);
+    };
+  });
+}
+
+// Logger instance
+export const logger = {
+  info: (...args: any[]) => {
+    const message = args.length > 0 ? util.format(args[0]) : '';
+    const timestamp = new Date().toISOString();
+    const logLine = `[${timestamp}] [INFO] ${message}\n`;
+    const stream = getLogStream();
+    if (stream) {
+      stream.write(logLine);
+    }
+    console.log(...args);
+  },
+  error: (...args: any[]) => {
+    const message = args.length > 0 ? util.format(args[0]) : '';
+    const timestamp = new Date().toISOString();
+    const logLine = `[${timestamp}] [ERROR] ${message}\n`;
+    const stream = getLogStream();
+    if (stream) {
+      stream.write(logLine);
+    }
+    console.error(...args);
+  },
+  warn: (...args: any[]) => {
+    const message = args.length > 0 ? util.format(args[0]) : '';
+    const timestamp = new Date().toISOString();
+    const logLine = `[${timestamp}] [WARN] ${message}\n`;
+    const stream = getLogStream();
+    if (stream) {
+      stream.write(logLine);
+    }
+    console.warn(...args);
+  },
+  debug: (...args: any[]) => {
+    const message = args.length > 0 ? util.format(args[0]) : '';
+    const timestamp = new Date().toISOString();
+    const logLine = `[${timestamp}] [DEBUG] ${message}\n`;
+    const stream = getLogStream();
+    if (stream) {
+      stream.write(logLine);
+    }
+    console.debug(...args);
+  },
+};

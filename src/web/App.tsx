@@ -8,6 +8,13 @@ import { useDispatch } from 'react-redux';
 import { apiClient } from './api/client';
 import { wsClient } from './api/websocket';
 import { isWebBuild } from './utils/platform';
+import { WS_EVENTS } from './api/websocket';
+import {
+  addMessage,
+  updateMessage,
+  setStreaming,
+  setPermissionRequest,
+} from './store/slices/coworkSlice';
 
 // Import components
 import Sidebar from './components/layout/Sidebar';
@@ -58,6 +65,50 @@ const App: React.FC = () => {
     };
 
     initializeApp();
+  }, [dispatch]);
+
+  // Set up WebSocket stream listeners for cowork messages
+  useEffect(() => {
+    const cleanups: Array<() => void> = [];
+
+    // Message listener - adds new messages to the session
+    cleanups.push(
+      wsClient.on(WS_EVENTS.COWORK_MESSAGE, (data: { sessionId: string; message: any }) => {
+        dispatch(addMessage({ sessionId, message: data.message }));
+      })
+    );
+
+    // Message update listener (for streaming content updates)
+    cleanups.push(
+      wsClient.on(WS_EVENTS.COWORK_MESSAGE_UPDATE, (data: { sessionId: string; messageId: string; updates: any }) => {
+        dispatch(updateMessage({ sessionId, messageId: data.messageId, content: data.updates?.content || '' }));
+      })
+    );
+
+    // Permission request listener
+    cleanups.push(
+      wsClient.on(WS_EVENTS.COWORK_PERMISSION, (data: { sessionId: string; request: any }) => {
+        dispatch(setPermissionRequest({ sessionId, request: data.request }));
+      })
+    );
+
+    // Complete listener - session finished
+    cleanups.push(
+      wsClient.on(WS_EVENTS.COWORK_COMPLETE, (_data: { sessionId: string }) => {
+        dispatch(setStreaming(false));
+      })
+    );
+
+    // Error listener
+    cleanups.push(
+      wsClient.on(WS_EVENTS.COWORK_ERROR, (_data: { sessionId: string }) => {
+        dispatch(setStreaming(false));
+      })
+    );
+
+    return () => {
+      cleanups.forEach((cleanup) => cleanup());
+    };
   }, [dispatch]);
 
   // Loading state

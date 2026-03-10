@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { app } from 'electron';
+import { app } from '../../../server/shims/electron';
 import type { SqliteStore } from '../sqliteStore';
 import type { CoworkApiConfig } from './coworkConfigStore';
 import {

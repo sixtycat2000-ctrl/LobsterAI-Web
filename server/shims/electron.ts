@@ -28,6 +28,7 @@ const getUserDataPath = (): string => {
 };
 
 export const app = {
+  isPackaged: false,
   getPath: (name: string): string => {
     switch (name) {
       case 'userData':
@@ -97,6 +98,7 @@ export const session = {
       onHeadersReceived: () => {},
     },
   }),
+  resolveProxy: async (_url: string) => '',
 };
 
 // Mock ipcMain

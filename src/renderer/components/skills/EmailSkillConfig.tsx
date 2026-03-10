@@ -159,10 +159,16 @@ const EmailSkillConfig: React.FC<EmailSkillConfigProps> = ({ onClose }) => {
   const latestConfigRef = useRef<Record<string, string>>(normalizeConfig({}));
   const lastPersistedConfigRef = useRef<Record<string, string>>(normalizeConfig({}));
   const persistIndicatorTimerRef = useRef<number | null>(null);
+  const configLoadedRef = useRef(false);
 
   useEffect(() => {
+    // Prevent duplicate requests in React StrictMode
+    if (configLoadedRef.current) return;
+    configLoadedRef.current = true;
+
     const loadConfig = async () => {
       const config = await skillService.getSkillConfig(SKILL_ID);
+      if (!isMountedRef.current) return;
       if (config.IMAP_USER) setEmail(config.IMAP_USER);
       if (config.IMAP_PASS) setPassword(config.IMAP_PASS);
       if (config.IMAP_HOST) setImapHost(config.IMAP_HOST);

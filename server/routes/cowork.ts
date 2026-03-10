@@ -5,6 +5,19 @@ import type { RequestContext, CoworkSessionId } from '../src/index';
 import { probeCoworkModelReadiness, generateSessionTitle } from '../../src/main/libs/coworkUtil';
 import type { PermissionResult } from '@anthropic-ai/claude-agent-sdk';
 
+// Type for provider config
+interface ProviderModel {
+  id: string;
+}
+
+interface ProviderConfig {
+  enabled?: boolean;
+  apiKey?: string;
+  baseUrl?: string;
+  apiFormat?: 'anthropic' | 'openai' | 'native';
+  models?: ProviderModel[];
+}
+
 // Constants
 const MIN_MEMORY_USER_MEMORIES_MAX_ITEMS = 1;
 const MAX_MEMORY_USER_MEMORIES_MAX_ITEMS = 60;
@@ -38,6 +51,14 @@ export function setupCoworkRoutes(app: Router) {
 
   // POST /api/cowork/sessions - Start a new cowork session
   router.post('/sessions', async (req: Request, res: Response) => {
+    const timings: { step: string; ms: number }[] = [];
+    const startTime = Date.now();
+    const markTime = (step: string) => {
+      timings.push({ step, ms: Date.now() - startTime });
+      console.log(`[PERF] /sessions ${step}: ${Date.now() - startTime}ms`);
+    };
+    markTime('request_start');
+
     try {
       const { coworkStore, coworkRunner } = req.context as RequestContext;
       const {
@@ -86,8 +107,11 @@ export function setupCoworkRoutes(app: Router) {
         content: prompt,
         metadata: Object.keys(messageMetadata).length > 0 ? messageMetadata : undefined,
       });
+      markTime('message_added');
 
+      markTime('before_probe');
       const probe = await probeCoworkModelReadiness();
+      markTime('after_probe');
       if (probe.ok === false) {
         coworkStore.updateSession(session.id, { status: 'error' });
         coworkStore.addMessage(session.id, {
@@ -104,23 +128,43 @@ export function setupCoworkRoutes(app: Router) {
 
       // Update session status to 'running' before starting async task
       coworkStore.updateSession(session.id, { status: 'running' });
+      markTime('status_updated');
 
-      // Start the session asynchronously
-      coworkRunner.startSession(session.id, prompt, {
-        skipInitialUserMessage: true,
-        skillIds: activeSkillIds,
-        workspaceRoot: selectedWorkspaceRoot,
-        confirmationMode: 'modal',
-        imageAttachments,
-      }).catch((error) => {
-        console.error('Cowork session error:', error);
+      // Start the session asynchronously (fire and forget)
+      // Use Promise.resolve().then() to ensure truly async execution without awaiting
+      markTime('before_startSession');
+      Promise.resolve().then(() => {
+        coworkRunner.startSession(session.id, prompt, {
+          skipInitialUserMessage: true,
+          skillIds: activeSkillIds,
+          workspaceRoot: selectedWorkspaceRoot,
+          confirmationMode: 'modal',
+          imageAttachments,
+        }).catch((error) => {
+          console.error('Cowork session error:', error);
+          console.error('Cowork session error type:', typeof error);
+          if (error instanceof Error) {
+            console.error('Error message:', error.message);
+            console.error('Error stack:', error.stack);
+          }
+          if (error && typeof error === 'object') {
+            console.error('Error keys:', Object.keys(error));
+            for (const key of Object.keys(error)) {
+              console.error(`  ${key}:`, (error as any)[key]);
+            }
+          }
+        });
       });
+      markTime('after_startSession_call');
 
       const sessionWithMessages = coworkStore.getSession(session.id) || {
         ...session,
         status: 'running' as const,
       };
+      markTime('before_response');
       res.json({ success: true, session: sessionWithMessages });
+      markTime('response_sent');
+      console.log('[PERF] /sessions timings:', JSON.stringify(timings));
     } catch (error) {
       res.status(500).json({
         success: false,
@@ -136,12 +180,15 @@ export function setupCoworkRoutes(app: Router) {
       const { sessionId } = req.params;
       const { prompt, systemPrompt, activeSkillIds, imageAttachments } = req.body;
 
-      coworkRunner.continueSession(sessionId as CoworkSessionId, prompt, {
-        systemPrompt,
-        skillIds: activeSkillIds,
-        imageAttachments,
-      }).catch((error) => {
-        console.error('Cowork continue error:', error);
+      // Start continuation asynchronously (fire and forget)
+      Promise.resolve().then(() => {
+        coworkRunner.continueSession(sessionId as CoworkSessionId, prompt, {
+          systemPrompt,
+          skillIds: activeSkillIds,
+          imageAttachments,
+        }).catch((error) => {
+          console.error('Cowork continue error:', error);
+        });
       });
 
       const session = coworkStore.getSession(sessionId as CoworkSessionId);
@@ -178,29 +225,6 @@ export function setupCoworkRoutes(app: Router) {
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to delete session',
-      });
-    }
-  });
-
-  // DELETE /api/cowork/sessions - Batch delete sessions
-  router.delete('/sessions', async (req: Request, res: Response) => {
-    try {
-      const { coworkStore } = req.context as RequestContext;
-      const { sessionIds } = req.body;
-
-      if (!Array.isArray(sessionIds)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid parameter: sessionIds (array) required',
-        });
-      }
-
-      coworkStore.deleteSessions(sessionIds);
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to batch delete sessions',
       });
     }
   });
@@ -471,9 +495,7 @@ export function setupCoworkRoutes(app: Router) {
     }
   });
 
-  // ==================== Utilities ====================
-
-  // POST /api/cowork/generateTitle - Generate session title
+ // ==================== Utilities ====================  // POST /api/cowork/generateTitle - Generate session title
   router.post('/generateTitle', async (req: Request, res: Response) => {
     const { userInput } = req.body;
     const result = await generateSessionTitle(userInput || null);
@@ -487,6 +509,194 @@ export function setupCoworkRoutes(app: Router) {
     const boundedLimit = Math.min(Math.max(limit, 1), 20);
     const cwds = coworkStore.listRecentCwds(boundedLimit);
     res.json(cwds);
+  });
+
+  // ==================== API Config ====================
+
+  // GET /api/cowork/api-config - Get API configuration
+  router.get('/api-config', async (req: Request, res: Response) => {
+    try {
+      const { store } = req.context as RequestContext;
+      const appConfig = store.get<any>('app_config');
+      if (!appConfig?.providers) {
+        return res.json({ success: true, data: null });
+      }
+
+      // Return a simplified API config
+      const defaultProvider = appConfig.model?.defaultModelProvider;
+      const defaultModel = appConfig.model?.defaultModel;
+      const providers = appConfig.providers || {};
+
+      // Find the active provider
+      let activeProvider: (ProviderConfig & { name: string }) | null = null;
+      const defaultProviderConfig = providers[defaultProvider] as ProviderConfig | undefined;
+      if (defaultProvider && defaultProviderConfig?.enabled) {
+        activeProvider = { name: defaultProvider, ...defaultProviderConfig };
+      } else {
+        // Find first enabled provider
+        for (const [name, config] of Object.entries(providers)) {
+          const c = config as ProviderConfig;
+          if (c?.enabled) {
+            activeProvider = { name, ...c };
+            break;
+          }
+        }
+      }
+
+      if (!activeProvider) {
+        return res.json({ success: true, data: null });
+      }
+
+      const apiConfig = {
+        apiKey: activeProvider.apiKey || '',
+        baseURL: activeProvider.baseUrl || '',
+        model: defaultModel || activeProvider.models?.[0]?.id || '',
+        apiType: activeProvider.apiFormat === 'anthropic' ? 'anthropic' : 'openai' as const,
+      };
+
+      res.json({ success: true, data: apiConfig });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get API config',
+      });
+    }
+  });
+
+  // GET /api/cowork/api-config/check - Check if API configuration is valid
+  router.get('/api-config/check', async (req: Request, res: Response) => {
+    try {
+      const { store } = req.context as RequestContext;
+      const appConfig = store.get<any>('app_config');
+
+      if (!appConfig?.providers) {
+        return res.json({
+          success: true,
+          data: { hasConfig: false, config: null, error: 'No providers configured' },
+        });
+      }
+
+      const providers = appConfig.providers || {};
+      const defaultProvider = appConfig.model?.defaultModelProvider;
+      const defaultModel = appConfig.model?.defaultModel;
+
+      // Find the active provider
+      let activeProvider: ProviderConfig | null = null;
+      let activeProviderName: string | null = null;
+      const providerConfig = providers[defaultProvider] as ProviderConfig | undefined;
+      if (defaultProvider && providerConfig?.enabled) {
+        activeProvider = providerConfig;
+        activeProviderName = defaultProvider;
+      } else {
+        for (const [name, config] of Object.entries(providers)) {
+          const pc = config as ProviderConfig;
+          if (pc?.enabled) {
+            activeProvider = pc;
+            activeProviderName = name;
+            break;
+          }
+        }
+      }
+
+      if (!activeProvider) {
+        return res.json({
+          success: true,
+          data: { hasConfig: false, config: null, error: 'No enabled provider found' },
+        });
+      }
+
+      const hasApiKey = Boolean(activeProvider.apiKey?.trim());
+      const hasBaseUrl = Boolean(activeProvider.baseUrl?.trim());
+      const hasModel = Boolean(defaultModel || activeProvider.models?.length);
+
+      const apiConfig = {
+        apiKey: activeProvider.apiKey || '',
+        baseURL: activeProvider.baseUrl || '',
+        model: defaultModel || activeProvider.models?.[0]?.id || '',
+        apiType: activeProvider.apiFormat === 'anthropic' ? 'anthropic' : 'openai' as const,
+      };
+
+      // Basic validation
+      const errors: string[] = [];
+      if (activeProviderName !== 'ollama' && !hasApiKey) {
+        errors.push('API key is required');
+      }
+      if (!hasBaseUrl) {
+        errors.push('Base URL is required');
+      }
+      if (!hasModel) {
+        errors.push('No model configured');
+      }
+
+      res.json({
+        success: true,
+        data: {
+          hasConfig: errors.length === 0,
+          config: apiConfig,
+          error: errors.length > 0 ? errors.join(', ') : undefined,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to check API config',
+      });
+    }
+  });
+
+  // PUT /api/cowork/api-config - Save API configuration
+  router.put('/api-config', async (req: Request, res: Response) => {
+    try {
+      const { store } = req.context as RequestContext;
+      const { apiKey, baseURL, model, apiType } = req.body;
+
+      // Get existing config
+      const appConfig = store.get<any>('app_config') || {};
+
+      // Update the config
+      const providers = appConfig.providers || {};
+      const defaultProvider = appConfig.model?.defaultModelProvider || 'anthropic';
+
+      if (!providers[defaultProvider]) {
+        providers[defaultProvider] = { enabled: true, apiKey: '', baseUrl: '', models: [] };
+      }
+
+      providers[defaultProvider].apiKey = apiKey || providers[defaultProvider].apiKey;
+      providers[defaultProvider].baseUrl = baseURL || providers[defaultProvider].baseUrl;
+      providers[defaultProvider].apiFormat = apiType || providers[defaultProvider].apiFormat;
+
+      if (!providers[defaultProvider].models?.some((m: any) => m.id === model)) {
+        providers[defaultProvider].models = [{ id: model }];
+      }
+
+      appConfig.providers = providers;
+      appConfig.model = { ...appConfig.model, defaultModel: model };
+
+      store.set('app_config', appConfig);
+
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to save API config',
+      });
+    }
+  });
+
+  // POST /api/cowork/generate-title - Generate session title from user input
+  router.post('/generate-title', async (req: Request, res: Response) => {
+    try {
+      const { userInput } = req.body;
+
+      // Call generateSessionTitle with the user input
+      const title = await generateSessionTitle(userInput || null);
+      res.json({ title });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to generate title',
+      });
+    }
   });
 
   app.use('/api/cowork', router);

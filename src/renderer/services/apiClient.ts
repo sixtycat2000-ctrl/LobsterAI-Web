@@ -68,8 +68,19 @@ export class ApiClient {
     });
   }
 
-  async delete<T>(path: string): Promise<{ success: boolean; data?: T; error?: string }> {
-    return this.request<T>(path, { method: 'DELETE' });
+  async patch<T>(path: string, body: unknown): Promise<{ success: boolean; data?: T; error?: string }> {
+    return this.request<T>(path, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+  }
+
+  async delete<T>(path: string, body?: unknown): Promise<{ success: boolean; data?: T; error?: string }> {
+    const options: RequestInit = { method: 'DELETE' };
+    if (body !== undefined) {
+      options.body = JSON.stringify(body);
+    }
+    return this.request<T>(path, options);
   }
 
   // Streaming API (SSE)

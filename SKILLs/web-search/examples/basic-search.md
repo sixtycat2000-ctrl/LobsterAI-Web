@@ -310,8 +310,8 @@ cat SKILLs/web-search/.server.log
 
 # Reinstall dependencies
 cd SKILLs/web-search
-npm install
-npm run build
+pnpm install
+pnpm run build
 ```
 
 ### Chrome Not Found

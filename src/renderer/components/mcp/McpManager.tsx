@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import SearchIcon from '../icons/SearchIcon';
 import TrashIcon from '../icons/TrashIcon';
@@ -39,7 +39,14 @@ const McpManager: React.FC = () => {
   const [dynamicCategories, setDynamicCategories] = useState<ReadonlyArray<{ id: string; key: string; name_zh?: string; name_en?: string }>>(mcpCategories);
   const currentLanguage = i18nService.getLanguage();
 
+  const serversLoadedRef = useRef(false);
+  const marketplaceLoadedRef = useRef(false);
+
   useEffect(() => {
+    // Prevent duplicate requests in React StrictMode
+    if (serversLoadedRef.current) return;
+    serversLoadedRef.current = true;
+
     let isActive = true;
     const loadServers = async () => {
       const loaded = await mcpService.loadServers();
@@ -51,6 +58,10 @@ const McpManager: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    // Prevent duplicate requests in React StrictMode
+    if (marketplaceLoadedRef.current) return;
+    marketplaceLoadedRef.current = true;
+
     let isActive = true;
     const fetchMarketplace = async () => {
       const result = await mcpService.fetchMarketplace();
