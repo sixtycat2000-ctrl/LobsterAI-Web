@@ -1,34 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { scheduledTaskService } from '../../services/scheduledTask';
 import { i18nService } from '../../services/i18n';
 import type { ScheduledTaskRunWithName } from '../../types/scheduledTask';
 import { ClockIcon } from '@heroicons/react/24/outline';
-
-function formatDuration(ms: number | null): string {
-  if (!ms) return '-';
-  if (ms < 1000) return `${ms}ms`;
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-  return `${Math.round(ms / 60000)}m`;
-}
-
-const statusConfig: Record<string, { label: string; color: string }> = {
-  success: { label: 'scheduledTasksStatusSuccess', color: 'text-green-500' },
-  error: { label: 'scheduledTasksStatusError', color: 'text-red-500' },
-  running: { label: 'scheduledTasksStatusRunning', color: 'text-blue-500' },
-};
-
-const AllRunsHistory: React.FC = () => {
-  const allRuns = useSelector((state: RootState) => state.scheduledTask.allRuns);
-    const runsLoadedRef = useRef(false);
-
-    useEffect(() => {
-        // Prevent duplicate requests in React StrictMode
-        if (runsLoadedRef.current) return;
-        runsLoadedRef.current = true;
-        scheduledTaskService.loadAllRuns(50);
-    }, []);
 
 function formatDuration(ms: number | null): string {
   if (!ms) return '-';

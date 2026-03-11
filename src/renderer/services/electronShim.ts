@@ -111,27 +111,27 @@ const skills = {
 // ============================================================================
 const mcp = {
   async list(): Promise<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }> {
-    const result = await apiClient.get<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }>('/mcp');
+    const result = await apiClient.get<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }>('/mcp/servers');
     return result.data || { success: false, error: 'No data returned' };
   },
 
   async create(data: unknown): Promise<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }> {
-    const result = await apiClient.post<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }>('/mcp', data);
+    const result = await apiClient.post<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }>('/mcp/servers', data);
     return result.data || { success: false, error: 'No data returned' };
   },
 
   async update(id: string, data: unknown): Promise<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }> {
-    const result = await apiClient.put<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }>(`/mcp/${encodeURIComponent(id)}`, data);
+    const result = await apiClient.patch<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }>(`/mcp/servers/${encodeURIComponent(id)}`, data);
     return result.data || { success: false, error: 'No data returned' };
   },
 
   async delete(id: string): Promise<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }> {
-    const result = await apiClient.delete<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }>(`/mcp/${encodeURIComponent(id)}`);
+    const result = await apiClient.delete<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }>(`/mcp/servers/${encodeURIComponent(id)}`);
     return result.data || { success: false, error: 'No data returned' };
   },
 
   async setEnabled(options: { id: string; enabled: boolean }): Promise<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }> {
-    const result = await apiClient.post<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }>(`/mcp/${encodeURIComponent(options.id)}/enabled`, { enabled: options.enabled });
+    const result = await apiClient.post<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }>(`/mcp/servers/${encodeURIComponent(options.id)}/enabled`, { enabled: options.enabled });
     return result.data || { success: false, error: 'No data returned' };
   },
 
@@ -365,7 +365,10 @@ const cowork = {
   },
 
   async respondToPermission(options: { requestId: string; result: CoworkPermissionResult }): Promise<{ success: boolean; error?: string }> {
-    const res = await apiClient.post<{ success: boolean; error?: string }>('/cowork/permissions/respond', options);
+    const res = await apiClient.post<{ success: boolean; error?: string }>(
+      `/cowork/permissions/${encodeURIComponent(options.requestId)}/respond`,
+      { result: options.result }
+    );
     return res.data || { success: false, error: 'No data returned' };
   },
 

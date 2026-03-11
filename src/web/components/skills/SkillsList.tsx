@@ -36,7 +36,7 @@ const SkillsList: React.FC = () => {
 
   const toggleSkill = async (skillId: string, enabled: boolean) => {
     try {
-      const response = await apiClient.post('/skills/enabled', { skillId, enabled });
+      const response = await apiClient.post('/skills/set-enabled', { id: skillId, enabled });
       if (response.success) {
         setSkills(skills.map(s => s.id === skillId ? { ...s, enabled } : s));
       }

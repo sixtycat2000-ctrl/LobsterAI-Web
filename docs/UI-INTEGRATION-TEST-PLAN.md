@@ -342,6 +342,348 @@ This document defines the UI integration test plan for LobsterAI Web, covering a
 
 ---
 
+### 10. Cowork Session Core - Message Input
+
+**Component:** `src/renderer/components/cowork/CoworkPromptInput.tsx`
+
+| Test ID | Test Case | Steps | Expected Result |
+|---------|-----------|-------|-----------------|
+| INPUT-001 | Basic prompt submission | Type text, press Enter or click Send | Message sent, input cleared |
+| INPUT-002 | Submit with keyboard shortcut | Press Ctrl/Cmd+Enter | Message sent |
+| INPUT-003 | Empty prompt validation | Try to submit empty input | Submit button disabled, no action |
+| INPUT-004 | Multi-line input | Type multiple lines, Shift+Enter | Newlines preserved in textarea |
+| INPUT-005 | Auto-resize textarea | Type long text | Textarea expands, max height limited |
+| INPUT-006 | File attachment - drag and drop | Drag file onto input area | File attached, preview shown |
+| INPUT-007 | File attachment - clipboard | Paste image from clipboard | Image attached, preview shown |
+| INPUT-008 | File attachment - browse | Click attachment button | File picker opens |
+| INPUT-009 | Image attachment preview | Attach image file | Thumbnail preview shown |
+| INPUT-010 | Remove attached file | Click X on attached file | File removed from attachment |
+| INPUT-011 | Working directory selector | Click directory dropdown | Shows workspace subdirectories |
+| INPUT-012 | Change working directory | Select different directory | Working directory updated |
+| INPUT-013 | Skill toggle | Click skill badge/button | Skills panel opens |
+| INPUT-014 | Skill selection | Enable/disable skills | Selected skills shown as badges |
+| INPUT-015 | Model selector | Click model dropdown | Shows available models |
+| INPUT-016 | Model change | Select different model | Model selection updated |
+| INPUT-017 | Input while streaming | Type while session active | Input disabled or queued |
+| INPUT-018 | Large file attachment | Attach large file (>10MB) | Shows warning or progress |
+| INPUT-019 | Invalid file type | Attach unsupported file type | Shows error message |
+| INPUT-020 | Clear input | Clear all text | Submit button becomes disabled |
+
+---
+
+### 11. Cowork Session Core - Message Display
+
+**Component:** `src/renderer/components/cowork/CoworkSessionDetail.tsx`
+
+| Test ID | Test Case | Steps | Expected Result |
+|---------|-----------|-------|-----------------|
+| MSG-001 | User message display | Send a message | Message appears with user icon |
+| MSG-002 | Assistant message display | Receive response | Message appears with assistant icon |
+| MSG-003 | Markdown rendering | View message with markdown | Properly formatted (bold, italic, links) |
+| MSG-004 | Code block rendering | View message with code | Syntax highlighted code block |
+| MSG-005 | Code block copy | Click copy on code block | Code copied to clipboard |
+| MSG-006 | Code block language label | View code block | Language label shown |
+| MSG-007 | Message timestamp | View any message | Timestamp displayed |
+| MSG-008 | Auto-scroll on new message | Receive new message | Scrolls to bottom |
+| MSG-009 | Scroll position retention | Scroll up, receive message | Position maintained if not at bottom |
+| MSG-010 | Long message handling | View very long message | Message properly contained, scrollable |
+| MSG-011 | Message with images | View message with images | Images displayed inline |
+| MSG-012 | Message with links | View message with links | Links are clickable, open in new tab |
+| MSG-013 | Copy message content | Click copy on message | Full message copied |
+| MSG-014 | Regenerate response | Click regenerate button | New response generated |
+| MSG-015 | Delete message | Click delete on message | Message removed from history |
+| MSG-016 | Empty session state | View new/empty session | Shows welcome/empty state |
+| MSG-017 | Loading skeleton | Load session with history | Skeleton shown while loading |
+| MSG-018 | Message error state | View failed message | Error indicator shown with retry option |
+| MSG-019 | Retry failed message | Click retry on failed | Message resent |
+| MSG-020 | Message model indicator | View message | Shows which model was used |
+
+---
+
+### 12. Cowork Session Core - Streaming
+
+**Component:** WebSocket streaming via `webSocketClient.ts`
+
+| Test ID | Test Case | Steps | Expected Result |
+|---------|-----------|-------|-----------------|
+| STREAM-001 | Streaming starts | Send prompt | Streaming indicator appears |
+| STREAM-002 | Content appears progressively | Watch streaming response | Text appears character by character |
+| STREAM-003 | Stop streaming - button | Click stop button | Streaming stops, partial message saved |
+| STREAM-004 | Stop streaming - Escape | Press Escape key | Streaming stops |
+| STREAM-005 | Streaming completion | Wait for completion | Streaming indicator removed |
+| STREAM-006 | Streaming with code blocks | Stream response with code | Code blocks render correctly |
+| STREAM-007 | Streaming with artifacts | Stream response with artifact | Artifact renders progressively |
+| STREAM-008 | Network interruption | Disconnect during stream | Error shown, retry option available |
+| STREAM-009 | Reconnection during stream | Reconnect during stream | Stream resumes or restarts |
+| STREAM-010 | Multiple sequential streams | Send multiple prompts | Each streams independently |
+| STREAM-011 | Large response streaming | Stream very long response | No performance issues |
+| STREAM-012 | Streaming with tool use | Stream includes tool calls | Tool use displayed inline |
+
+---
+
+### 13. Cowork Session Core - Tool Permissions
+
+**Component:** `src/renderer/components/cowork/CoworkPermissionModal.tsx`
+
+| Test ID | Test Case | Steps | Expected Result |
+|---------|-----------|-------|-----------------|
+| PERM-001 | Permission modal appears | Claude requests tool use | Modal shows tool details |
+| PERM-002 | Tool name display | View permission modal | Tool name clearly shown |
+| PERM-003 | Tool parameters display | View permission modal | Parameters shown in readable format |
+| PERM-004 | Allow tool - once | Click "Allow" button | Tool executes, modal closes |
+| PERM-005 | Deny tool | Click "Deny" button | Tool denied, modal closes |
+| PERM-006 | Allow tool - always | Check "Remember", click Allow | Tool auto-approved in future |
+| PERM-007 | Multiple tools request | Multiple tools requested | Each shown in sequence |
+| PERM-008 | Question wizard - single | Single question asked | Input field shown |
+| PERM-009 | Question wizard - multiple | Multiple questions asked | All questions displayed |
+| PERM-010 | Question wizard - submit | Answer questions, submit | Answers sent to Claude |
+| PERM-011 | Question validation | Leave required field empty | Validation error shown |
+| PERM-012 | Cancel permission | Click outside or X | Permission denied, modal closes |
+| PERM-013 | Dangerous tool warning | Request for file delete | Warning shown prominently |
+| PERM-014 | Path display | Tool accesses file | Full file path shown |
+| PERM-015 | Command display | Tool runs command | Full command shown |
+
+---
+
+### 14. Artifacts Rendering
+
+**Component:** `src/renderer/components/artifacts/`
+
+| Test ID | Test Case | Steps | Expected Result |
+|---------|-----------|-------|-----------------|
+| ART-001 | HTML artifact | View HTML artifact | Renders in sandboxed iframe |
+| ART-002 | HTML artifact - scripts | HTML contains scripts | Scripts blocked or sandboxed |
+| ART-003 | SVG artifact | View SVG artifact | Renders with DOMPurify sanitization |
+| ART-004 | SVG artifact - malicious | Malicious SVG content | Sanitized, safe display |
+| ART-005 | Mermaid diagram | View Mermaid artifact | Diagram renders correctly |
+| ART-006 | Mermaid - complex | Complex Mermaid diagram | No rendering errors |
+| ART-007 | React component | View React artifact | Compiles and renders in iframe |
+| ART-008 | React component - error | Invalid React code | Error boundary shown |
+| ART-009 | Code artifact | View code artifact | Syntax highlighted |
+| ART-010 | Code artifact - copy | Click copy button | Code copied to clipboard |
+| ART-011 | Artifact fullscreen | Click fullscreen button | Opens in fullscreen modal |
+| ART-012 | Artifact download | Click download button | Artifact downloaded |
+| ART-013 | Large artifact | View very large artifact | No performance issues |
+| ART-014 | Artifact refresh | Click refresh button | Artifact re-renders |
+| ART-015 | Artifact close | Click close button | Artifact view closes |
+
+---
+
+### 15. File Browser
+
+**Component:** `src/renderer/components/FileBrowser/`
+
+| Test ID | Test Case | Steps | Expected Result |
+|---------|-----------|-------|-----------------|
+| FILE-001 | View file browser | Navigate to Files view | Shows workspace directory |
+| FILE-002 | Navigate directory | Click on folder | Shows folder contents |
+| FILE-003 | Navigate up | Click ".." or back | Goes to parent directory |
+| FILE-004 | Breadcrumb navigation | Click breadcrumb item | Navigates to that path |
+| FILE-005 | File list display | View directory | Shows name, size, date, type |
+| FILE-006 | File type icons | View different file types | Appropriate icons shown |
+| FILE-007 | Sort by name | Click name column | Files sorted alphabetically |
+| FILE-008 | Sort by date | Click date column | Files sorted by date |
+| FILE-009 | Sort by size | Click size column | Files sorted by size |
+| FILE-010 | File search | Type in search box | Files filtered by name |
+| FILE-011 | View text file | Click on text file | Content displayed |
+| FILE-012 | View image file | Click on image | Image preview shown |
+| FILE-013 | View code file | Click on code file | Syntax highlighted content |
+| FILE-014 | View binary file | Click on binary file | Shows "cannot display" message |
+| FILE-015 | Download file | Click download button | File downloads |
+| FILE-016 | File path copy | Click copy path | Path copied to clipboard |
+| FILE-017 | Refresh directory | Click refresh button | Directory reloaded |
+| FILE-018 | Large directory | Open directory with many files | Pagination or virtual scroll |
+| FILE-019 | Hidden files toggle | Toggle hidden files | Shows/hides hidden files |
+| FILE-020 | File in cowork | Drag file to cowork input | File attached to message |
+| FILE-021 | Directory validation | Navigate to invalid path | Error message shown |
+| FILE-022 | Permission denied | Navigate to restricted path | Error message shown |
+
+---
+
+### 16. WebSocket & Connection Handling
+
+**Component:** `src/renderer/services/webSocketClient.ts`
+
+| Test ID | Test Case | Steps | Expected Result |
+|---------|-----------|-------|-----------------|
+| WS-001 | Initial connection | Start application | WebSocket connects successfully |
+| WS-002 | Connection status indicator | View UI | Shows connected status |
+| WS-003 | Connection lost | Stop server | Shows disconnected status |
+| WS-004 | Auto-reconnect | Restart server after disconnect | Reconnects automatically |
+| WS-005 | Reconnect attempts | Server down for extended time | Multiple reconnect attempts |
+| WS-006 | Reconnect backoff | Watch reconnect timing | Exponential backoff observed |
+| WS-007 | Connection restored | After reconnect | All data synced |
+| WS-008 | Message during disconnect | Send message while disconnected | Queued or error shown |
+| WS-009 | Multiple tabs | Open in multiple tabs | Each has own connection |
+| WS-010 | Connection timeout | Slow network | Timeout error shown |
+| WS-011 | Heartbeat/ping-pong | Idle connection | Connection maintained |
+
+---
+
+### 17. API Error Handling
+
+**Component:** `src/renderer/services/apiClient.ts`
+
+| Test ID | Test Case | Steps | Expected Result |
+|---------|-----------|-------|-----------------|
+| API-001 | 400 Bad Request | Trigger bad request | Error message shown |
+| API-002 | 401 Unauthorized | Invalid/expired session | Redirects to login or shows error |
+| API-003 | 403 Forbidden | Access denied resource | Permission error shown |
+| API-004 | 404 Not Found | Request non-existent resource | Not found error shown |
+| API-005 | 500 Server Error | Server crash | Server error message shown |
+| API-006 | Network timeout | Slow/timeout request | Timeout error shown |
+| API-007 | Network offline | Disable network | Offline indicator shown |
+| API-008 | Network restored | Re-enable network | Requests resume |
+| API-009 | Invalid JSON response | Malformed response | Parse error handled |
+| API-010 | Rate limited | Hit rate limit | Rate limit message shown |
+| API-011 | Retry on failure | Transient error | Automatic retry |
+| API-012 | Request cancellation | Cancel pending request | Request aborted |
+
+---
+
+### 18. Keyboard Shortcuts
+
+**Component:** Global keyboard handlers
+
+| Test ID | Test Case | Steps | Expected Result |
+|---------|-----------|-------|-----------------|
+| KB-001 | New Chat (Ctrl/Cmd+N) | Press shortcut | New session created |
+| KB-002 | Search (Ctrl/Cmd+F) | Press shortcut | Search modal opens |
+| KB-003 | Settings (Ctrl/Cmd+,) | Press shortcut | Settings panel opens |
+| KB-004 | Send message (Enter) | Press Enter in input | Message sent |
+| KB-005 | New line (Shift+Enter) | Press Shift+Enter | New line in input |
+| KB-006 | Stop generation (Escape) | Press Escape during stream | Streaming stops |
+| KB-007 | Close modal (Escape) | Press Escape in modal | Modal closes |
+| KB-008 | Navigate up (Arrow Up) | Press up in session list | Previous session selected |
+| KB-009 | Navigate down (Arrow Down) | Press down in session list | Next session selected |
+| KB-010 | Copy (Ctrl/Cmd+C) | Select text, press shortcut | Text copied |
+| KB-011 | Paste (Ctrl/Cmd+V) | Press shortcut in input | Content pasted |
+| KB-012 | Select all (Ctrl/Cmd+A) | Press shortcut in input | All text selected |
+| KB-013 | Undo (Ctrl/Cmd+Z) | Press shortcut in input | Last action undone |
+| KB-014 | Toggle sidebar (Ctrl/Cmd+B) | Press shortcut | Sidebar toggles |
+| KB-015 | Focus input (Ctrl/Cmd+I) | Press shortcut | Input focused |
+
+---
+
+### 19. Theme & Responsive Design
+
+**Component:** Theme provider, responsive layouts
+
+| Test ID | Test Case | Steps | Expected Result |
+|---------|-----------|-------|-----------------|
+| THEME-001 | Toggle dark mode | Click theme toggle | UI switches to dark |
+| THEME-002 | Toggle light mode | Click theme toggle in dark | UI switches to light |
+| THEME-003 | System preference | Match system dark mode | App uses dark mode |
+| THEME-004 | Theme persistence | Restart app | Theme setting retained |
+| THEME-005 | All components in dark | View all views in dark mode | No visibility issues |
+| THEME-006 | Responsive - desktop | View at 1920px | Full layout displayed |
+| THEME-007 | Responsive - tablet | Resize to 768px | Layout adapts |
+| THEME-008 | Responsive - mobile | Resize to 375px | Mobile layout shown |
+| THEME-009 | Sidebar auto-collapse | Resize to mobile | Sidebar collapses |
+| THEME-010 | Touch interactions | Use touch on tablet | Touch works correctly |
+| THEME-011 | Text scaling | Increase font size | Layout adjusts |
+| THEME-012 | High contrast mode | Enable high contrast | Colors adjust |
+| THEME-013 | Reduced motion | Enable reduced motion | Animations disabled |
+
+---
+
+### 20. Accessibility (A11y)
+
+**Component:** All interactive components
+
+| Test ID | Test Case | Steps | Expected Result |
+|---------|-----------|-------|-----------------|
+| A11Y-001 | Tab navigation | Press Tab repeatedly | Focus moves through interactive elements |
+| A11Y-002 | Focus indicator | Focus on element | Visible focus ring |
+| A11Y-003 | Focus trap in modal | Tab in modal | Focus stays within modal |
+| A11Y-004 | Escape closes modal | Press Escape in modal | Modal closes |
+| A11Y-005 | Button labels | Inspect buttons | All have accessible names |
+| A11Y-006 | Image alt text | Inspect images | All have alt text |
+| A11Y-007 | ARIA labels | Inspect with screen reader | Proper ARIA labels present |
+| A11Y-008 | Form labels | Inspect form inputs | All have associated labels |
+| A11Y-009 | Error announcements | Trigger form error | Screen reader announces error |
+| A11Y-010 | Heading hierarchy | Inspect headings | Proper h1-h6 hierarchy |
+| A11Y-011 | Landmark regions | Inspect page structure | Main, nav, aside regions present |
+| A11Y-012 | Skip links | Tab from top | Skip link available |
+| A11Y-013 | Color contrast | Check with contrast tool | Meets WCAG AA |
+
+---
+
+### 21. Notifications & Toasts
+
+**Component:** Toast notification system
+
+| Test ID | Test Case | Steps | Expected Result |
+|---------|-----------|-------|-----------------|
+| TOAST-001 | Success toast | Complete successful action | Green success toast shown |
+| TOAST-002 | Error toast | Trigger error | Red error toast shown |
+| TOAST-003 | Warning toast | Trigger warning | Yellow warning toast shown |
+| TOAST-004 | Info toast | Trigger info notification | Blue info toast shown |
+| TOAST-005 | Toast auto-dismiss | Wait for toast | Toast dismisses after timeout |
+| TOAST-006 | Toast manual dismiss | Click X on toast | Toast dismisses immediately |
+| TOAST-007 | Multiple toasts | Trigger multiple notifications | Toasts stack vertically |
+| TOAST-008 | Toast action button | View toast with action | Action button works |
+| TOAST-009 | Toast position | View toast | Appears in correct position |
+| TOAST-010 | Toast persistence | Navigate while toast shown | Toast remains visible |
+
+---
+
+### 22. Loading & Performance States
+
+**Component:** Various loading indicators
+
+| Test ID | Test Case | Steps | Expected Result |
+|---------|-----------|-------|-----------------|
+| LOAD-001 | App initial load | Start app | Loading spinner shown |
+| LOAD-002 | Session list loading | Open app with sessions | Skeleton/skeleton shown |
+| LOAD-003 | Session content loading | Select session | Content loads progressively |
+| LOAD-004 | Skills loading | Navigate to Skills | Loading state shown |
+| LOAD-005 | MCP loading | Navigate to MCP | Loading state shown |
+| LOAD-006 | File browser loading | Open large directory | Loading indicator shown |
+| LOAD-007 | Infinite scroll | Scroll long session | More content loads |
+| LOAD-008 | Debounced search | Type in search | Search debounced (waits) |
+| LOAD-009 | Lazy loading | Scroll to artifact | Artifact lazy loads |
+| LOAD-010 | Progress indicator | Upload large file | Progress bar shown |
+
+---
+
+### 23. Data Persistence
+
+**Component:** LocalStorage, IndexedDB, SQLite
+
+| Test ID | Test Case | Steps | Expected Result |
+|---------|-----------|-------|-----------------|
+| PERSIST-001 | Settings persistence | Change settings, restart | Settings retained |
+| PERSIST-002 | Session history | Create sessions, restart | Sessions retained |
+| PERSIST-003 | Current session | Reload page | Current session restored |
+| PERSIST-004 | Theme preference | Set theme, restart | Theme retained |
+| PERSIST-005 | Sidebar state | Collapse sidebar, restart | State retained |
+| PERSIST-006 | Draft message | Type message, reload | Draft preserved |
+| PERSIST-007 | Clear data | Clear app data | All data removed |
+| PERSIST-008 | Data export | Export app data | JSON file downloaded |
+| PERSIST-009 | Data import | Import app data | Data restored |
+
+---
+
+### 24. End-to-End Workflows
+
+**Component:** Full user workflows
+
+| Test ID | Test Case | Steps | Expected Result |
+|---------|-----------|-------|-----------------|
+| E2E-001 | Complete chat workflow | New chat → Send prompt → Get response → Continue conversation | All steps work smoothly |
+| E2E-002 | Chat with file | Attach file → Send prompt with file → View response | File context used |
+| E2E-003 | Chat with artifact | Request artifact → View artifact → Interact with artifact | Artifact renders correctly |
+| E2E-004 | Tool approval workflow | Prompt requiring tool → Approve tool → View result | Tool executes correctly |
+| E2E-005 | Schedule task workflow | Create task → Enable → Wait for run → View result | Task runs on schedule |
+| E2E-006 | Install skill workflow | Browse marketplace → Install skill → Use skill | Skill works correctly |
+| E2E-007 | Configure MCP workflow | Add MCP server → Configure → Test connection | MCP server works |
+| E2E-008 | Error recovery workflow | Trigger error → View error → Retry → Success | Recovery works |
+| E2E-009 | Multi-session workflow | Create multiple chats → Switch between them | Context preserved |
+| E2E-010 | Export workflow | Create content → Export session → Verify export | Export works correctly |
+
+---
+
 ## Test Execution Checklist
 
 ### Pre-requisites
@@ -375,7 +717,22 @@ This document defines the UI integration test plan for LobsterAI Web, covering a
 | Batch Operations | 10 | | | |
 | Cowork Sessions | 8 | | | |
 | Settings | 13 | | | |
-| **TOTAL** | **171** | | | |
+| Message Input | 20 | | | |
+| Message Display | 20 | | | |
+| Streaming | 12 | | | |
+| Tool Permissions | 15 | | | |
+| Artifacts | 15 | | | |
+| File Browser | 22 | | | |
+| WebSocket | 11 | | | |
+| API Errors | 12 | | | |
+| Keyboard Shortcuts | 15 | | | |
+| Theme & Responsive | 13 | | | |
+| Accessibility | 13 | | | |
+| Notifications | 10 | | | |
+| Loading States | 10 | | | |
+| Data Persistence | 9 | | | |
+| E2E Workflows | 10 | | | |
+| **TOTAL** | **388** | | | |
 
 ---
 
@@ -469,4 +826,5 @@ This document defines the UI integration test plan for LobsterAI Web, covering a
 
 | Date | Changes |
 |------|---------|
+| 2026-03-11 | Added 15 new test modules covering cowork core (input, display, streaming, permissions, artifacts), file browser, WebSocket/API errors, keyboard shortcuts, theme/responsive, accessibility, notifications, loading states, data persistence, and E2E workflows. Total increased from 171 to 388 test cases. |
 | 2026-03-10 | Initial test plan created |

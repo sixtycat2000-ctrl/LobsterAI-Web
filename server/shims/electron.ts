@@ -27,6 +27,16 @@ const getUserDataPath = (): string => {
   return userDataPath;
 };
 
+// Get the project root directory (where package.json with sql.js dependency lives)
+const getProjectRoot = (): string => {
+  // When running from server/ directory, go up one level to project root
+  const cwd = process.cwd();
+  if (cwd.endsWith('/server') || cwd.endsWith('\\server')) {
+    return path.dirname(cwd);
+  }
+  return cwd;
+};
+
 export const app = {
   isPackaged: false,
   getPath: (name: string): string => {
@@ -53,7 +63,7 @@ export const app = {
   whenReady: () => Promise.resolve(),
   quit: () => process.exit(0),
   on: () => {},
-  getAppPath: () => process.cwd(),
+  getAppPath: getProjectRoot,
 };
 
 // Mock BrowserWindow class

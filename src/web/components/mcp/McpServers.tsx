@@ -37,7 +37,7 @@ const McpServers: React.FC = () => {
 
   const toggleServer = async (serverId: string, enabled: boolean) => {
     try {
-      const response = await apiClient.post(`/mcp/servers/${serverId}/toggle`, { enabled });
+      const response = await apiClient.post(`/mcp/servers/${serverId}/enabled`, { enabled });
       if (response.success) {
         setServers(servers.map(s => s.id === serverId ? { ...s, enabled } : s));
       }

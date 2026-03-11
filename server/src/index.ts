@@ -318,7 +318,7 @@ const sanitizePermissionRequestForIpc = (request: any): any => {
 
 // User data path (export for use in routes)
 // Note: This will be set after startServer is called
-export let userDataPath = getUserDataPath();
+export const userDataPath = getUserDataPath();
 
 // Create Express app
 const app = express();
