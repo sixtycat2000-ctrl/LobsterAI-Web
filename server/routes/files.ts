@@ -1,8 +1,9 @@
 import { Router, Request, Response } from 'express';
+import type { Router as RouterType } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const router = Router();
+const router: RouterType = Router();
 
 // Get workspace root from app settings
 const getWorkspaceRoot = (req: Request): string => {

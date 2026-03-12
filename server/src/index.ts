@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
+import type { Express } from 'express';
 import cors from 'cors';
 import http from 'http';
 import path from 'path';
@@ -321,7 +322,7 @@ const sanitizePermissionRequestForIpc = (request: any): any => {
 export const userDataPath = getUserDataPath();
 
 // Create Express app
-const app = express();
+const app: Express = express();
 
 // Store user data path in app for routes to access
 app.set('userDataPath', userDataPath);
@@ -391,7 +392,8 @@ setupFilesRoutes(app);
 app.set('workspace', serverOptions.workspace);
 
 // Serve static files from production build
-const publicPath = path.join(__dirname, '../public');
+// __dirname is server/dist/src/, so we need ../../public to reach server/public/
+const publicPath = path.join(__dirname, '../../public');
 
 if (process.env.NODE_ENV === 'production') {
   // Check if public directory exists

@@ -101,6 +101,7 @@ export const session = {
       // Use native fetch for web server build
       return fetch(url, options);
     },
+    resolveProxy: async (_url: string) => '',
   },
   fromPartition: () => ({
     webRequest: {
@@ -108,7 +109,6 @@ export const session = {
       onHeadersReceived: () => {},
     },
   }),
-  resolveProxy: async (_url: string) => '',
 };
 
 // Mock ipcMain
