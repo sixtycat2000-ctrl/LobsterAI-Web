@@ -27,8 +27,8 @@
 
 将 runner 源码放在 `sandbox/agent-runner`。构建时会复制到 `/opt/agent-runner`，并可选执行：
 
-- `npm ci --omit=dev`
-- `npm run build --if-present`
+- `pnpm install --prod`
+- `pnpm run build --if-present`
 
 如入口不为 `/opt/agent-runner/dist/index.js`，请更新
 `sandbox/image/overlay/etc/conf.d/agentd` 中的 `AGENTD_ENTRY`。

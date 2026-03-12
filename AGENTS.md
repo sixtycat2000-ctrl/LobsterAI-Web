@@ -6,28 +6,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # Development - starts Vite dev server for web UI
-npm run dev
+pnpm run dev
 
 # Build production bundle (web UI + server)
-npm run build
+pnpm run build
 
 # Build web UI only
-npm run build:web
+pnpm run build:web
 
 # Build server only
-npm run build:server
+pnpm run build:server
 
 # Start the server
-npm start
+pnpm start
 
 # Start server in development mode (hot reload)
-npm run server:dev
+pnpm run server:dev
 
 # Lint with ESLint
-npm run lint
+pnpm run lint
 
 # Run tests
-npm test
+pnpm test
 ```
 
 **Requirements**: Node.js >= 20.
@@ -211,12 +211,12 @@ Rich preview of code outputs:
 
 - Tests use Node.js built-in `node:test` module
 - Test files in `tests/` directory
-- Validate UI manually by running `npm run dev`
+- Validate UI manually by running `pnpm run dev`
 - Key flows to test:
   - Cowork: start session, send prompts, approve permissions
   - File browser: navigate, view files
   - Settings: theme, language switching
-- Run `npm run lint` before submitting
+- Run `pnpm run lint` before submitting
 
 ## Commit Guidelines
 

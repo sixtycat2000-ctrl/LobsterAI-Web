@@ -38,13 +38,13 @@ Claude → Bash Tool → CLI Scripts → Bridge Server (localhost:8923) → Play
 
 ```bash
 cd SKILLs/web-search
-npm install
+pnpm install
 ```
 
 ### 2. Build
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 ### 3. Start Server
@@ -247,7 +247,7 @@ cat .server.log
 lsof -i :8923
 
 # Rebuild
-npm run build
+pnpm run build
 ```
 
 ### Chrome Not Found

@@ -5,7 +5,8 @@ import React from 'react';
  * In web builds, this component renders nothing as window controls are not applicable
  */
 interface WindowTitleBarProps {
-  isOverlayActive: boolean;
+  isOverlayActive?: boolean;
+  inline?: boolean;
 }
 
 const WindowTitleBar: React.FC<WindowTitleBarProps> = () => {

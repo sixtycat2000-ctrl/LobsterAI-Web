@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { type ChildProcessByStdio, spawn, spawnSync } from 'child_process';
-import { app } from 'electron';
+import { app } from '../../../server/shims/electron';
 import fs from 'fs';
 import path from 'path';
 import type { Readable } from 'stream';
@@ -17,19 +17,19 @@ import { cpRecursiveSync } from '../fsCompat';
 import { isQuestionLikeMemoryText, type CoworkMemoryGuardLevel } from './coworkMemoryExtractor';
 import { z } from 'zod';
 
-// Stubs for removed sandbox functionality - @ts-ignore used to suppress errors
-// These functions/variables should never be called since sandbox mode is rejected early
-declare const SANDBOX_SKILLS_MOUNT_TAG: any;
-declare const SANDBOX_SKILLS_GUEST_PATH_WINDOWS: any;
-declare const SANDBOX_SKILLS_GUEST_PATH: any;
-declare const SANDBOX_WORKSPACE_GUEST_ROOT: any;
-declare const SANDBOX_WORKSPACE_LEGACY_ROOT: any;
-declare const SANDBOX_ATTACHMENT_DIR: any;
-declare const SANDBOX_HISTORY_MAX_MESSAGES: any;
-declare const SANDBOX_HISTORY_MAX_TOTAL_CHARS: any;
-declare const SANDBOX_HISTORY_MAX_MESSAGE_CHARS: any;
-declare const SANDBOX_ALLOWED_ENV_KEYS: any;
-declare const LEGACY_SKILLS_ROOT_HINTS: any;
+// Default values for sandbox-related constants (used when not defined by build system)
+// These are normally defined via webpack/esbuild DefinePlugin, but need defaults for tsx dev mode
+const SANDBOX_SKILLS_MOUNT_TAG = (globalThis as any).SANDBOX_SKILLS_MOUNT_TAG ?? '/skills';
+const SANDBOX_SKILLS_GUEST_PATH_WINDOWS = (globalThis as any).SANDBOX_SKILLS_GUEST_PATH_WINDOWS ?? '/skills';
+const SANDBOX_SKILLS_GUEST_PATH = (globalThis as any).SANDBOX_SKILLS_GUEST_PATH ?? '/skills';
+const SANDBOX_WORKSPACE_GUEST_ROOT = (globalThis as any).SANDBOX_WORKSPACE_GUEST_ROOT ?? '/workspace';
+const SANDBOX_WORKSPACE_LEGACY_ROOT = (globalThis as any).SANDBOX_WORKSPACE_LEGACY_ROOT ?? '/workspace';
+const SANDBOX_ATTACHMENT_DIR = (globalThis as any).SANDBOX_ATTACHMENT_DIR ?? '/workspace/attachments';
+const SANDBOX_HISTORY_MAX_MESSAGES = (globalThis as any).SANDBOX_HISTORY_MAX_MESSAGES ?? 50;
+const SANDBOX_HISTORY_MAX_TOTAL_CHARS = (globalThis as any).SANDBOX_HISTORY_MAX_TOTAL_CHARS ?? 100000;
+const SANDBOX_HISTORY_MAX_MESSAGE_CHARS = (globalThis as any).SANDBOX_HISTORY_MAX_MESSAGE_CHARS ?? 10000;
+const SANDBOX_ALLOWED_ENV_KEYS = (globalThis as any).SANDBOX_ALLOWED_ENV_KEYS ?? [];
+const LEGACY_SKILLS_ROOT_HINTS = (globalThis as any).LEGACY_SKILLS_ROOT_HINTS ?? [];
 // @ts-ignore
 type SandboxRuntimeInfo = any;
 // @ts-ignore
@@ -2540,6 +2540,24 @@ export class CoworkRunner extends EventEmitter {
       await this.runClaudeCode(activeSession, effectivePrompt, sessionCwd, effectiveSystemPrompt, options.imageAttachments);
     } catch (error) {
       console.error('Cowork session error:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error message:', error instanceof Error ? error.message : String(error));
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
+      if (error && typeof error === 'object') {
+        console.error('Error object keys:', Object.keys(error));
+        console.error('Error stringified:', JSON.stringify(error, null, 2));
+        if (error instanceof Error) {
+          this.handleError(sessionId, error.message);
+        } else if (typeof error === 'string') {
+          this.handleError(sessionId, error);
+        } else if (error && typeof error === 'object') {
+          // Try to extract error message from various error object shapes
+          const errorMsg = (error as any).message || (error as any).error || JSON.stringify(error);
+          this.handleError(sessionId, errorMsg);
+        } else {
+          this.handleError(sessionId, 'Unknown error');
+        }
+      }
     }
   }
 
@@ -2811,7 +2829,16 @@ export class CoworkRunner extends EventEmitter {
     systemPrompt: string,
     imageAttachments?: Array<{ name: string; mimeType: string; base64Data: string }>
   ): Promise<void> {
+    const perfTimings: { step: string; ms: number }[] = [];
+    const perfStart = Date.now();
+    const markTime = (step: string) => {
+      const now = Date.now();
+      perfTimings.push({ step, ms: now - perfStart });
+      coworkLog('INFO', 'PERF', `[${sessionId}] ${step}: ${now - perfStart}ms`);
+    };
+
     const { sessionId, abortController } = activeSession;
+    markTime('runClaudeCodeLocal_start');
     const config = this.store.getConfig();
 
     if (this.isSessionStopRequested(sessionId, activeSession)) {
@@ -2842,9 +2869,11 @@ export class CoworkRunner extends EventEmitter {
       model: apiConfig.model,
       hasApiKey: Boolean(apiConfig.apiKey),
     });
+    markTime('api_config_resolved');
 
     const claudeCodePath = getClaudeCodePath();
     const envVars = await getEnhancedEnvWithTmpdir(cwd, 'local');
+    markTime('env_vars_ready');
     const electronNodeRuntimePath = getElectronNodeRuntimePath();
     const windowsHideInitScript = ensureWindowsChildProcessHideInitScript();
     let stderrTail = '';
@@ -3130,7 +3159,9 @@ export class CoworkRunner extends EventEmitter {
         logFile: getCoworkLogPath(),
       });
 
+      markTime('before_sdk_load');
       const { query, createSdkMcpServer, tool } = await loadClaudeSdk();
+      markTime('sdk_loaded');
       coworkLog('INFO', 'runClaudeCodeLocal', 'Claude SDK loaded successfully');
 
       const memoryServerName = `user-memory-${sessionId.slice(0, 8)}`;
@@ -3516,7 +3547,9 @@ export class CoworkRunner extends EventEmitter {
         }
       }, startupTimeoutMs);
 
+      markTime('before_query');
       const result = await query({ prompt: queryPrompt, options } as any);
+      markTime('query_returned');
       coworkLog('INFO', 'runClaudeCodeLocal', 'Claude Code process started, iterating events');
       let eventCount = 0;
 
@@ -3525,6 +3558,7 @@ export class CoworkRunner extends EventEmitter {
         if (startupTimer) {
           clearTimeout(startupTimer);
           startupTimer = null;
+          markTime('first_event_received');
         }
         if (this.isSessionStopRequested(sessionId, activeSession)) {
           break;

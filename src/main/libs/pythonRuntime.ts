@@ -1,4 +1,4 @@
-import { app } from 'electron';
+import { app } from '../../../server/shims/electron';
 import { spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';

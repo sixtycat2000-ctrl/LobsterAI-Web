@@ -3,9 +3,9 @@
  * Tests all REST API endpoints using Node.js built-in Test framework.
  */
 
-const { describe, it, before, after } = require('node:test');
-const assert = require('node:assert');
-const { createTestServer } = require('./setup.js');
+import { describe, it, before, after } from 'node:test';
+import assert from 'node:assert';
+import { createTestServer } from './setup.js';
 
 // Handle unhandled rejections that may occur during cleanup
 process.on('unhandledRejection', (reason, promise) => {

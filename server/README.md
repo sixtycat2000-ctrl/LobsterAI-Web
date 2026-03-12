@@ -149,11 +149,11 @@ The WebSocket server at `/ws` supports real-time events:
 
 ```bash
 # Development
-npm run dev
+pnpm run dev
 
 # Production
-npm run build
-npm start
+pnpm run build
+pnpm start
 ```
 
 ## Environment Variables

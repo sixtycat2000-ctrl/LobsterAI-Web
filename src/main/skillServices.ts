@@ -5,7 +5,7 @@
 import { execSync, spawn, spawnSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
-import { app } from 'electron';
+import { app } from '../../server/shims/electron';
 import { cpRecursiveSync } from './fsCompat';
 import { getElectronNodeRuntimePath } from './libs/coworkUtil';
 import { appendPythonRuntimeToEnv } from './libs/pythonRuntime';

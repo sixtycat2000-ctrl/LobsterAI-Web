@@ -1,4 +1,4 @@
-import { app } from 'electron';
+import { app } from '../../../server/shims/electron';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { pathToFileURL } from 'url';

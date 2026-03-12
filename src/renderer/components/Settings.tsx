@@ -426,8 +426,13 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice, onUpda
   // Workspace info (web build)
   const [workspacePath, setWorkspacePath] = useState<string>('');
   const [dataDirPath, setDataDirPath] = useState<string>('');
+  const versionLoadedRef = useRef(false);
 
   useEffect(() => {
+    // Prevent duplicate requests in React StrictMode
+    if (versionLoadedRef.current) return;
+    versionLoadedRef.current = true;
+
     window.electron.appInfo.getVersion().then(setAppVersion);
 
     // Load workspace and data directory paths (web build)

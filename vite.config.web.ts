@@ -49,9 +49,7 @@ export default defineConfig({
     port: devPort,
     strictPort: false,
     host: true,
-    hmr: {
-      port: devPort,
-    },
+    // HMR will use the same port as the server (no need to specify separately)
     watch: {
       usePolling: true,
     },

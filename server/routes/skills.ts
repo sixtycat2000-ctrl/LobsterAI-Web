@@ -19,8 +19,8 @@ export function setupSkillsRoutes(app: Router) {
     }
   });
 
-  // POST /api/skills/enabled - Set skill enabled state
-  router.post('/enabled', async (req: Request, res: Response) => {
+  // POST /api/skills/set-enabled - Set skill enabled state
+  router.post('/set-enabled', async (req: Request, res: Response) => {
     try {
       const { skillManager } = req.context as RequestContext;
       const { id, enabled } = req.body;

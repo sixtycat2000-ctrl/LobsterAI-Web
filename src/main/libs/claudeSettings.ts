@@ -1,6 +1,5 @@
 import { join } from 'path';
-import { app } from 'electron';
-import type { SqliteStore } from '../sqliteStore';
+import { app } from '../../../server/shims/electron';
 import type { CoworkApiConfig } from './coworkConfigStore';
 import {
   configureCoworkOpenAICompatProxy,
@@ -47,14 +46,19 @@ export type ApiConfigResolution = {
   error?: string;
 };
 
-// Store getter function injected from main.ts
-let storeGetter: (() => SqliteStore | null) | null = null;
+// Minimal store interface for settings access
+interface StoreLike {
+  get<T>(key: string): T | undefined;
+}
 
-export function setStoreGetter(getter: () => SqliteStore | null): void {
+// Store getter function injected from main.ts
+let storeGetter: (() => StoreLike | null) | null = null;
+
+export function setStoreGetter(getter: () => StoreLike | null): void {
   storeGetter = getter;
 }
 
-const getStore = (): SqliteStore | null => {
+const getStore = (): StoreLike | null => {
   if (!storeGetter) {
     return null;
   }

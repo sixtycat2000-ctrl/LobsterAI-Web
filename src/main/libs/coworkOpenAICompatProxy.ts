@@ -1,5 +1,5 @@
 import http from 'http';
-import { BrowserWindow, session } from 'electron';
+import { BrowserWindow, session } from '../../../server/shims/electron';
 import {
   anthropicToOpenAI,
   buildOpenAIChatCompletionsURL,

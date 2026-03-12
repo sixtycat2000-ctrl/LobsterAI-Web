@@ -1,4 +1,4 @@
-import { app, session } from 'electron';
+import { app, session } from '../../../server/shims/electron';
 
 const PROXY_ENV_KEYS = [
   'http_proxy',

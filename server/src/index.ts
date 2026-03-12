@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
+import type { Express } from 'express';
 import cors from 'cors';
 import http from 'http';
 import path from 'path';
@@ -27,6 +28,8 @@ import { McpStore } from '../../src/main/mcpStore';
 import { ScheduledTaskStore } from '../../src/main/scheduledTaskStore';
 import { Scheduler } from '../../src/main/libs/scheduler';
 import { initLogger, getLogFilePath } from '../../src/main/logger';
+import { setStoreGetter } from '../../src/main/libs/claudeSettings';
+import { startCoworkOpenAICompatProxy } from '../../src/main/libs/coworkOpenAICompatProxy';
 import { getCoworkLogPath } from '../../src/main/libs/coworkLogger';
 import { exportLogsZip } from '../../src/main/libs/logExport';
 import { APP_NAME } from '../../src/main/appConstants';
@@ -316,10 +319,10 @@ const sanitizePermissionRequestForIpc = (request: any): any => {
 
 // User data path (export for use in routes)
 // Note: This will be set after startServer is called
-export let userDataPath = getUserDataPath();
+export const userDataPath = getUserDataPath();
 
 // Create Express app
-const app = express();
+const app: Express = express();
 
 // Store user data path in app for routes to access
 app.set('userDataPath', userDataPath);
@@ -389,13 +392,37 @@ setupFilesRoutes(app);
 app.set('workspace', serverOptions.workspace);
 
 // Serve static files from production build
-if (process.env.NODE_ENV === 'production') {
-  const distPath = path.join(__dirname, '../dist');
-  app.use(express.static(distPath));
+// __dirname is server/dist/src/, so we need ../../public to reach server/public/
+const publicPath = path.join(__dirname, '../../public');
 
-  // SPA fallback
-  app.get('*', (req: Request, res: Response) => {
-    res.sendFile(path.join(distPath, 'index.html'));
+if (process.env.NODE_ENV === 'production') {
+  // Check if public directory exists
+  if (fs.existsSync(publicPath)) {
+    app.use(express.static(publicPath));
+
+    // SPA fallback - serve index.html for client-side routing
+    app.get('*', (req: Request, res: Response, next: NextFunction) => {
+      // Skip API routes and WebSocket upgrade requests
+      if (req.path.startsWith('/api') || req.path.startsWith('/ws')) {
+        return next();
+      }
+      res.sendFile(path.join(publicPath, 'index.html'));
+    });
+  } else {
+    console.warn('[Server] Warning: Public directory not found at', publicPath);
+  }
+} else {
+  // Development mode: provide info when accessing root path directly
+  app.get('/', (req: Request, res: Response) => {
+    res.json({
+      name: APP_NAME,
+      message: 'API server is running. In development mode, access the UI via Vite dev server at http://localhost:5176',
+      apiEndpoints: {
+        health: '/health',
+        api: '/api/*',
+        websocket: '/ws',
+      },
+    });
   });
 }
 
@@ -427,6 +454,13 @@ const startServer = async (options: ServerOptions = {}): Promise<http.Server> =>
   try {
     // Initialize store before starting
     await initStore();
+
+    // Set store getter for claudeSettings
+    setStoreGetter(getStore);
+
+    // Start OpenAI compatibility proxy for non-Anthropic providers
+    await startCoworkOpenAICompatProxy();
+    console.log('[Server] OpenAI compatibility proxy started');
 
     // Initialize WebSocket server
     wss = initWebSocketServer(server);

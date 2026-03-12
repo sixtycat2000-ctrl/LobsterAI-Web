@@ -4,8 +4,8 @@ import type { RequestContext } from '../src/index';
 export function setupMcpRoutes(app: Router) {
   const router = Router();
 
-  // GET /api/mcp - List all MCP servers
-  router.get('/', (req: Request, res: Response) => {
+  // GET /api/mcp/servers - List all MCP servers
+  router.get('/servers', (req: Request, res: Response) => {
     try {
       const { mcpStore } = req.context as RequestContext;
       const servers = mcpStore.listServers();
@@ -18,8 +18,8 @@ export function setupMcpRoutes(app: Router) {
     }
   });
 
-  // POST /api/mcp - Create a new MCP server
-  router.post('/', (req: Request, res: Response) => {
+  // POST /api/mcp/servers - Create a new MCP server
+  router.post('/servers', (req: Request, res: Response) => {
     try {
       const { mcpStore } = req.context as RequestContext;
       const data = req.body;
@@ -34,8 +34,8 @@ export function setupMcpRoutes(app: Router) {
     }
   });
 
-  // PUT /api/mcp/:id - Update an MCP server
-  router.put('/:id', (req: Request, res: Response) => {
+  // PATCH /api/mcp/servers/:id - Update an MCP server
+  router.patch('/servers/:id', (req: Request, res: Response) => {
     try {
       const { mcpStore } = req.context as RequestContext;
       mcpStore.updateServer(req.params.id, req.body as any);
@@ -49,8 +49,8 @@ export function setupMcpRoutes(app: Router) {
     }
   });
 
-  // DELETE /api/mcp/:id - Delete an MCP server
-  router.delete('/:id', (req: Request, res: Response) => {
+  // DELETE /api/mcp/servers/:id - Delete an MCP server
+  router.delete('/servers/:id', (req: Request, res: Response) => {
     try {
       const { mcpStore } = req.context as RequestContext;
       mcpStore.deleteServer(req.params.id);
@@ -64,8 +64,8 @@ export function setupMcpRoutes(app: Router) {
     }
   });
 
-  // POST /api/mcp/:id/enabled - Set MCP server enabled state
-  router.post('/:id/enabled', (req: Request, res: Response) => {
+  // POST /api/mcp/servers/:id/enabled - Set MCP server enabled state
+  router.post('/servers/:id/enabled', (req: Request, res: Response) => {
     try {
       const { mcpStore } = req.context as RequestContext;
       const { enabled } = req.body;

@@ -3,37 +3,40 @@
  * This module provides utilities to start/stop the Express server for testing.
  */
 
-const http = require('node:http');
-const path = require('path');
-const fs = require('fs');
-const os = require('os');
+import http from 'node:http';
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
+import { fileURLToPath } from 'url';
 
 // Use tsx to load TypeScript modules
-const tsx = require('tsx/cjs/api');
+import { require } from 'tsx/cjs/api';
 
-// Get the project root directory
+// Get the project root directory (ES module equivalent of __dirname)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..', '..');
 
 // Load ESM modules via tsx
-const express = tsx.require(path.join(projectRoot, 'node_modules', 'express'), __dirname);
-const cors = tsx.require(path.join(projectRoot, 'node_modules', 'cors'), __dirname);
-const { WebSocketServer } = tsx.require(path.join(projectRoot, 'node_modules', 'ws'), __dirname);
+const express = require(path.join(projectRoot, 'node_modules', 'express'), __dirname);
+const cors = require(path.join(projectRoot, 'node_modules', 'cors'), __dirname);
+const { WebSocketServer } = require(path.join(projectRoot, 'node_modules', 'ws'), __dirname);
 
 // Import the web-compatible SqliteStore
-const { SqliteStore } = tsx.require(path.join(projectRoot, 'server', 'sqliteStore.web.ts'), __dirname);
+const { SqliteStore } = require(path.join(projectRoot, 'server', 'sqliteStore.web.ts'), __dirname);
 
 // Import route setup functions using tsx for TypeScript files
-const { setupStoreRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'store.ts'), __dirname);
-const { setupSkillsRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'skills.ts'), __dirname);
-const { setupMcpRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'mcp.ts'), __dirname);
-const { setupCoworkRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'cowork.ts'), __dirname);
-const { setupScheduledTaskRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'scheduledTasks.ts'), __dirname);
-const { setupPermissionsRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'permissions.ts'), __dirname);
-const { setupAppRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'app.ts'), __dirname);
-const { setupLogRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'log.ts'), __dirname);
-const { setupApiProxyRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'apiProxy.ts'), __dirname);
-const { setupDialogRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'dialog.ts'), __dirname);
-const { setupShellRoutes } = tsx.require(path.join(projectRoot, 'server', 'routes', 'shell.ts'), __dirname);
+const { setupStoreRoutes } = require(path.join(projectRoot, 'server', 'routes', 'store.ts'), __dirname);
+const { setupSkillsRoutes } = require(path.join(projectRoot, 'server', 'routes', 'skills.ts'), __dirname);
+const { setupMcpRoutes } = require(path.join(projectRoot, 'server', 'routes', 'mcp.ts'), __dirname);
+const { setupCoworkRoutes } = require(path.join(projectRoot, 'server', 'routes', 'cowork.ts'), __dirname);
+const { setupScheduledTaskRoutes } = require(path.join(projectRoot, 'server', 'routes', 'scheduledTasks.ts'), __dirname);
+const { setupPermissionsRoutes } = require(path.join(projectRoot, 'server', 'routes', 'permissions.ts'), __dirname);
+const { setupAppRoutes } = require(path.join(projectRoot, 'server', 'routes', 'app.ts'), __dirname);
+const { setupLogRoutes } = require(path.join(projectRoot, 'server', 'routes', 'log.ts'), __dirname);
+const { setupApiProxyRoutes } = require(path.join(projectRoot, 'server', 'routes', 'apiProxy.ts'), __dirname);
+const { setupDialogRoutes } = require(path.join(projectRoot, 'server', 'routes', 'dialog.ts'), __dirname);
+const { setupShellRoutes } = require(path.join(projectRoot, 'server', 'routes', 'shell.ts'), __dirname);
 
 // Test data directory
 let testDataDir = null;
@@ -406,4 +409,4 @@ async function createTestServer(port = 0) {
   };
 }
 
-module.exports = { createTestServer };
+export { createTestServer };

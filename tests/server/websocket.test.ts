@@ -3,10 +3,10 @@
  * Tests WebSocket connection, subscription, and message handling.
  */
 
-const { describe, it, before, after } = require('node:test');
-const assert = require('node:assert');
-const WebSocket = require('ws');
-const { createTestServer } = require('./setup.js');
+import { describe, it, before, after } from 'node:test';
+import assert from 'node:assert';
+import WebSocket from 'ws';
+import { createTestServer } from './setup.js';
 
 // Handle unhandled rejections that may occur during cleanup
 process.on('unhandledRejection', (reason, promise) => {
@@ -189,31 +189,46 @@ describe('WebSocket Tests', () => {
     it('includes timestamp in pong response', async () => {
       const ws = new WebSocket(wsUrl);
 
-      // Wait for connection
-      await new Promise((resolve) => {
-        ws.on('open', resolve);
+      // Set up welcome message listener BEFORE connection opens
+      const welcomePromise = new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          ws.close();
+          reject(new Error('Welcome timeout'));
+        }, 5000);
+
+        ws.once('message', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+
+        ws.once('error', reject);
       });
 
-      // Consume welcome message
-      await new Promise((resolve) => {
-        ws.once('message', () => resolve());
+      // Wait for connection
+      await new Promise<void>((resolve) => {
+        ws.once('open', () => resolve());
       });
+
+      // Wait for welcome message
+      await welcomePromise;
 
       const beforeTime = Date.now();
-      ws.send(JSON.stringify({ type: 'ping', data: {} }));
 
-      const pongMessage = await new Promise((resolve, reject) => {
+      // Set up listener BEFORE sending ping to avoid race condition
+      const pongPromise = new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           ws.close();
           reject(new Error('Pong timeout'));
         }, 5000);
 
-        ws.on('message', (data) => {
+        ws.once('message', (data) => {
           clearTimeout(timeout);
           try {
             const message = JSON.parse(data.toString());
             if (message.type === 'pong') {
               resolve(message);
+            } else {
+              reject(new Error('Unexpected message type'));
             }
           } catch (err) {
             reject(err);
@@ -221,6 +236,9 @@ describe('WebSocket Tests', () => {
         });
       });
 
+      ws.send(JSON.stringify({ type: 'ping', data: {} }));
+
+      const pongMessage = await pongPromise as { data: { timestamp: number } };
       const afterTime = Date.now();
 
       assert.ok(pongMessage.data.timestamp >= beforeTime);
@@ -235,15 +253,28 @@ describe('WebSocket Tests', () => {
     it('subscribes to a room', async () => {
       const ws = new WebSocket(wsUrl);
 
-      // Wait for connection
-      await new Promise((resolve) => {
-        ws.on('open', resolve);
+      // Set up welcome message listener BEFORE connection opens
+      const welcomePromise = new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          ws.close();
+          reject(new Error('Welcome timeout'));
+        }, 5000);
+
+        ws.once('message', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+
+        ws.once('error', reject);
       });
 
-      // Consume welcome message
-      await new Promise((resolve) => {
-        ws.once('message', () => resolve());
+      // Wait for connection
+      await new Promise<void>((resolve) => {
+        ws.once('open', () => resolve());
       });
+
+      // Wait for welcome message
+      await welcomePromise;
 
       // Subscribe to a room
       const roomId = 'cowork:test-session-123';
@@ -264,15 +295,28 @@ describe('WebSocket Tests', () => {
     it('unsubscribes from a room', async () => {
       const ws = new WebSocket(wsUrl);
 
-      // Wait for connection
-      await new Promise((resolve) => {
-        ws.on('open', resolve);
+      // Set up welcome message listener BEFORE connection opens
+      const welcomePromise = new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          ws.close();
+          reject(new Error('Welcome timeout'));
+        }, 5000);
+
+        ws.once('message', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+
+        ws.once('error', reject);
       });
 
-      // Consume welcome message
-      await new Promise((resolve) => {
-        ws.once('message', () => resolve());
+      // Wait for connection
+      await new Promise<void>((resolve) => {
+        ws.once('open', () => resolve());
       });
+
+      // Wait for welcome message
+      await welcomePromise;
 
       const roomId = 'cowork:test-session-456';
 
@@ -298,15 +342,28 @@ describe('WebSocket Tests', () => {
     it('handles multiple room subscriptions', async () => {
       const ws = new WebSocket(wsUrl);
 
-      // Wait for connection
-      await new Promise((resolve) => {
-        ws.on('open', resolve);
+      // Set up welcome message listener BEFORE connection opens
+      const welcomePromise = new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          ws.close();
+          reject(new Error('Welcome timeout'));
+        }, 5000);
+
+        ws.once('message', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+
+        ws.once('error', reject);
       });
 
-      // Consume welcome message
-      await new Promise((resolve) => {
-        ws.once('message', () => resolve());
+      // Wait for connection
+      await new Promise<void>((resolve) => {
+        ws.once('open', () => resolve());
       });
+
+      // Wait for welcome message
+      await welcomePromise;
 
       // Subscribe to multiple rooms
       const rooms = [
@@ -333,15 +390,28 @@ describe('WebSocket Tests', () => {
     it('handles invalid JSON gracefully', async () => {
       const ws = new WebSocket(wsUrl);
 
-      // Wait for connection
-      await new Promise((resolve) => {
-        ws.on('open', resolve);
+      // Set up welcome message listener BEFORE connection opens
+      const welcomePromise = new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          ws.close();
+          reject(new Error('Welcome timeout'));
+        }, 5000);
+
+        ws.once('message', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+
+        ws.once('error', reject);
       });
 
-      // Consume welcome message
-      await new Promise((resolve) => {
-        ws.once('message', () => resolve());
+      // Wait for connection
+      await new Promise<void>((resolve) => {
+        ws.once('open', () => resolve());
       });
+
+      // Wait for welcome message
+      await welcomePromise;
 
       // Send invalid JSON
       ws.send('not valid json');
@@ -358,15 +428,28 @@ describe('WebSocket Tests', () => {
     it('handles unknown message type', async () => {
       const ws = new WebSocket(wsUrl);
 
-      // Wait for connection
-      await new Promise((resolve) => {
-        ws.on('open', resolve);
+      // Set up welcome message listener BEFORE connection opens
+      const welcomePromise = new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          ws.close();
+          reject(new Error('Welcome timeout'));
+        }, 5000);
+
+        ws.once('message', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+
+        ws.once('error', reject);
       });
 
-      // Consume welcome message
-      await new Promise((resolve) => {
-        ws.once('message', () => resolve());
+      // Wait for connection
+      await new Promise<void>((resolve) => {
+        ws.once('open', () => resolve());
       });
+
+      // Wait for welcome message
+      await welcomePromise;
 
       // Send unknown message type
       ws.send(JSON.stringify({
@@ -385,15 +468,28 @@ describe('WebSocket Tests', () => {
     it('handles subscribe with missing data', async () => {
       const ws = new WebSocket(wsUrl);
 
-      // Wait for connection
-      await new Promise((resolve) => {
-        ws.on('open', resolve);
+      // Set up welcome message listener BEFORE connection opens
+      const welcomePromise = new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          ws.close();
+          reject(new Error('Welcome timeout'));
+        }, 5000);
+
+        ws.once('message', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+
+        ws.once('error', reject);
       });
 
-      // Consume welcome message
-      await new Promise((resolve) => {
-        ws.once('message', () => resolve());
+      // Wait for connection
+      await new Promise<void>((resolve) => {
+        ws.once('open', () => resolve());
       });
+
+      // Wait for welcome message
+      await welcomePromise;
 
       // Send subscribe without data
       ws.send(JSON.stringify({
@@ -501,15 +597,28 @@ describe('WebSocket Tests', () => {
     it('handles binary messages', async () => {
       const ws = new WebSocket(wsUrl);
 
-      // Wait for connection
-      await new Promise((resolve) => {
-        ws.on('open', resolve);
+      // Set up welcome message listener BEFORE connection opens
+      const welcomePromise = new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          ws.close();
+          reject(new Error('Welcome timeout'));
+        }, 5000);
+
+        ws.once('message', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+
+        ws.once('error', reject);
       });
 
-      // Consume welcome message
-      await new Promise((resolve) => {
-        ws.once('message', () => resolve());
+      // Wait for connection
+      await new Promise<void>((resolve) => {
+        ws.once('open', () => resolve());
       });
+
+      // Wait for welcome message
+      await welcomePromise;
 
       // Send binary data
       const buffer = Buffer.from('binary data', 'utf8');

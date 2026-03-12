@@ -34,15 +34,18 @@ interface EmailConnectivityTestResult {
 // ============================================================================
 const store = {
   async get<T>(key: string): Promise<{ success: boolean; value?: T; error?: string }> {
-    return apiClient.get<T>(`/store/${encodeURIComponent(key)}`);
+    const result = await apiClient.get<{ success: boolean; value?: T; error?: string }>(`/store/${encodeURIComponent(key)}`);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async set(key: string, value: unknown): Promise<{ success: boolean; error?: string }> {
-    return apiClient.put(`/store/${encodeURIComponent(key)}`, value);
+    const result = await apiClient.post<{ success: boolean; error?: string }>(`/store/${encodeURIComponent(key)}`, value);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async remove(key: string): Promise<{ success: boolean; error?: string }> {
-    return apiClient.delete(`/store/${encodeURIComponent(key)}`);
+    const result = await apiClient.delete<{ success: boolean; error?: string }>(`/store/${encodeURIComponent(key)}`);
+    return result.data || { success: false, error: 'No data returned' };
   },
 };
 
@@ -51,42 +54,51 @@ const store = {
 // ============================================================================
 const skills = {
   async list(): Promise<{ success: boolean; skills?: Skill[]; error?: string }> {
-    return apiClient.get('/skills');
+    const result = await apiClient.get<{ success: boolean; skills?: Skill[]; error?: string }>('/skills');
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async setEnabled(options: { id: string; enabled: boolean }): Promise<{ success: boolean; skills?: Skill[]; error?: string }> {
-    return apiClient.post('/skills/set-enabled', options);
+    const result = await apiClient.post<{ success: boolean; skills?: Skill[]; error?: string }>('/skills/set-enabled', options);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async delete(id: string): Promise<{ success: boolean; skills?: Skill[]; error?: string }> {
-    return apiClient.delete(`/skills/${encodeURIComponent(id)}`);
+    const result = await apiClient.delete<{ success: boolean; skills?: Skill[]; error?: string }>(`/skills/${encodeURIComponent(id)}`);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async download(source: string): Promise<{ success: boolean; skills?: Skill[]; error?: string }> {
-    return apiClient.post('/skills/download', { source });
+    const result = await apiClient.post<{ success: boolean; skills?: Skill[]; error?: string }>('/skills/download', { source });
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async getRoot(): Promise<{ success: boolean; path?: string; error?: string }> {
-    return apiClient.get('/skills/root');
+    const result = await apiClient.get<{ success: boolean; path?: string; error?: string }>('/skills/root');
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async autoRoutingPrompt(): Promise<{ success: boolean; prompt?: string | null; error?: string }> {
-    return apiClient.get('/skills/auto-routing-prompt');
+    const result = await apiClient.get<{ success: boolean; prompt?: string | null; error?: string }>('/skills/autoRoutingPrompt');
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async getConfig(skillId: string): Promise<{ success: boolean; config?: Record<string, string>; error?: string }> {
-    return apiClient.get(`/skills/${encodeURIComponent(skillId)}/config`);
+    const result = await apiClient.get<{ success: boolean; config?: Record<string, string>; error?: string }>(`/skills/${encodeURIComponent(skillId)}/config`);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async setConfig(skillId: string, config: Record<string, string>): Promise<{ success: boolean; error?: string }> {
-    return apiClient.put(`/skills/${encodeURIComponent(skillId)}/config`, config);
+    const result = await apiClient.put<{ success: boolean; error?: string }>(`/skills/${encodeURIComponent(skillId)}/config`, config);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async testEmailConnectivity(
     skillId: string,
     config: Record<string, string>
   ): Promise<{ success: boolean; result?: EmailConnectivityTestResult; error?: string }> {
-    return apiClient.post(`/skills/${encodeURIComponent(skillId)}/test-email`, config);
+    const result = await apiClient.post<{ success: boolean; result?: EmailConnectivityTestResult; error?: string }>(`/skills/${encodeURIComponent(skillId)}/test-email`, config);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   onChanged(callback: () => void): () => void {
@@ -99,27 +111,33 @@ const skills = {
 // ============================================================================
 const mcp = {
   async list(): Promise<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }> {
-    return apiClient.get('/mcp/servers');
+    const result = await apiClient.get<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }>('/mcp/servers');
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async create(data: unknown): Promise<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }> {
-    return apiClient.post('/mcp/servers', data);
+    const result = await apiClient.post<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }>('/mcp/servers', data);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async update(id: string, data: unknown): Promise<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }> {
-    return apiClient.put(`/mcp/servers/${encodeURIComponent(id)}`, data);
+    const result = await apiClient.patch<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }>(`/mcp/servers/${encodeURIComponent(id)}`, data);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async delete(id: string): Promise<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }> {
-    return apiClient.delete(`/mcp/servers/${encodeURIComponent(id)}`);
+    const result = await apiClient.delete<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }>(`/mcp/servers/${encodeURIComponent(id)}`);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async setEnabled(options: { id: string; enabled: boolean }): Promise<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }> {
-    return apiClient.post('/mcp/servers/set-enabled', options);
+    const result = await apiClient.post<{ success: boolean; servers?: McpServerConfigIPC[]; error?: string }>(`/mcp/servers/${encodeURIComponent(options.id)}/enabled`, { enabled: options.enabled });
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async fetchMarketplace(): Promise<{ success: boolean; data?: McpMarketplaceData; error?: string }> {
-    return apiClient.get('/mcp/marketplace');
+    const result = await apiClient.get<{ success: boolean; data?: McpMarketplaceData; error?: string }>('/mcp/marketplace');
+    return result.data || { success: false, error: 'No data returned' };
   },
 };
 
@@ -229,11 +247,13 @@ export interface FileItem {
 // ============================================================================
 const files = {
   async list(path: string = ''): Promise<{ success: boolean; items?: FileItem[]; error?: string }> {
-    return apiClient.get(`/files/list?path=${encodeURIComponent(path)}`);
+    const result = await apiClient.get<{ success: boolean; items?: FileItem[]; error?: string }>(`/files/list?path=${encodeURIComponent(path)}`);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async read(path: string): Promise<{ success: boolean; content?: string; error?: string }> {
-    return apiClient.get(`/files/read?path=${encodeURIComponent(path)}`);
+    const result = await apiClient.get<{ success: boolean; content?: string; error?: string }>(`/files/read?path=${encodeURIComponent(path)}`);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   download(path: string): string {
@@ -241,7 +261,8 @@ const files = {
   },
 
   async validate(path: string): Promise<{ success: boolean; valid?: boolean; error?: string }> {
-    return apiClient.get(`/files/validate?path=${encodeURIComponent(path)}`);
+    const result = await apiClient.get<{ success: boolean; valid?: boolean; error?: string }>(`/files/validate?path=${encodeURIComponent(path)}`);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   onChanged(callback: (data: FileChangeEvent) => void): () => void {
@@ -254,7 +275,8 @@ const files = {
 // ============================================================================
 const workspace = {
   async getPath(): Promise<{ success: boolean; path?: string; error?: string }> {
-    return apiClient.get('/app/workspace');
+    const result = await apiClient.get<{ success: boolean; path?: string; error?: string }>('/app/workspace');
+    return result.data || { success: false, error: 'No data returned' };
   },
 };
 
@@ -270,7 +292,8 @@ const cowork = {
     activeSkillIds?: string[];
     imageAttachments?: Array<{ name: string; mimeType: string; base64Data: string }>;
   }): Promise<{ success: boolean; session?: CoworkSession; error?: string }> {
-    return apiClient.post('/cowork/sessions/start', options);
+    const result = await apiClient.post<{ success: boolean; session?: CoworkSession; error?: string }>('/cowork/sessions', options);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async continueSession(options: {
@@ -280,44 +303,52 @@ const cowork = {
     activeSkillIds?: string[];
     imageAttachments?: Array<{ name: string; mimeType: string; base64Data: string }>;
   }): Promise<{ success: boolean; session?: CoworkSession; error?: string }> {
-    return apiClient.post(`/cowork/sessions/${encodeURIComponent(options.sessionId)}/continue`, {
+    const result = await apiClient.post<{ success: boolean; session?: CoworkSession; error?: string }>(`/cowork/sessions/${encodeURIComponent(options.sessionId)}/continue`, {
       prompt: options.prompt,
       systemPrompt: options.systemPrompt,
       activeSkillIds: options.activeSkillIds,
       imageAttachments: options.imageAttachments,
     });
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async stopSession(sessionId: string): Promise<{ success: boolean; error?: string }> {
-    return apiClient.post(`/cowork/sessions/${encodeURIComponent(sessionId)}/stop`, {});
+    const result = await apiClient.post<{ success: boolean; error?: string }>(`/cowork/sessions/${encodeURIComponent(sessionId)}/stop`, {});
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async deleteSession(sessionId: string): Promise<{ success: boolean; error?: string }> {
-    return apiClient.delete(`/cowork/sessions/${encodeURIComponent(sessionId)}`);
+    const result = await apiClient.delete<{ success: boolean; error?: string }>(`/cowork/sessions/${encodeURIComponent(sessionId)}`);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async deleteSessions(sessionIds: string[]): Promise<{ success: boolean; error?: string }> {
-    return apiClient.post('/cowork/sessions/batch-delete', { sessionIds });
+    const result = await apiClient.delete<{ success: boolean; error?: string }>('/cowork/sessions', { sessionIds });
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async setSessionPinned(options: { sessionId: string; pinned: boolean }): Promise<{ success: boolean; error?: string }> {
-    return apiClient.put(`/cowork/sessions/${encodeURIComponent(options.sessionId)}/pin`, {
+    const result = await apiClient.patch<{ success: boolean; error?: string }>(`/cowork/sessions/${encodeURIComponent(options.sessionId)}/pin`, {
       pinned: options.pinned,
     });
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async renameSession(options: { sessionId: string; title: string }): Promise<{ success: boolean; error?: string }> {
-    return apiClient.put(`/cowork/sessions/${encodeURIComponent(options.sessionId)}/rename`, {
+    const result = await apiClient.patch<{ success: boolean; error?: string }>(`/cowork/sessions/${encodeURIComponent(options.sessionId)}`, {
       title: options.title,
     });
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async getSession(sessionId: string): Promise<{ success: boolean; session?: CoworkSession; error?: string }> {
-    return apiClient.get(`/cowork/sessions/${encodeURIComponent(sessionId)}`);
+    const result = await apiClient.get<{ success: boolean; session?: CoworkSession; error?: string }>(`/cowork/sessions/${encodeURIComponent(sessionId)}`);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async listSessions(): Promise<{ success: boolean; sessions?: CoworkSessionSummary[]; error?: string }> {
-    return apiClient.get('/cowork/sessions');
+    const result = await apiClient.get<{ success: boolean; sessions?: CoworkSessionSummary[]; error?: string }>('/cowork/sessions');
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   // Image export not available in web (requires Electron main process)
@@ -334,15 +365,21 @@ const cowork = {
   },
 
   async respondToPermission(options: { requestId: string; result: CoworkPermissionResult }): Promise<{ success: boolean; error?: string }> {
-    return apiClient.post('/cowork/permissions/respond', options);
+    const res = await apiClient.post<{ success: boolean; error?: string }>(
+      `/cowork/permissions/${encodeURIComponent(options.requestId)}/respond`,
+      { result: options.result }
+    );
+    return res.data || { success: false, error: 'No data returned' };
   },
 
   async getConfig(): Promise<{ success: boolean; config?: CoworkConfig; error?: string }> {
-    return apiClient.get('/cowork/config');
+    const result = await apiClient.get<{ success: boolean; config?: CoworkConfig; error?: string }>('/cowork/config');
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async setConfig(config: CoworkConfigUpdate): Promise<{ success: boolean; error?: string }> {
-    return apiClient.put('/cowork/config', config);
+    const result = await apiClient.put<{ success: boolean; error?: string }>('/cowork/config', config);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async listMemoryEntries(input: {
@@ -352,7 +389,15 @@ const cowork = {
     limit?: number;
     offset?: number;
   }): Promise<{ success: boolean; entries?: CoworkUserMemoryEntry[]; error?: string }> {
-    return apiClient.get('/cowork/memory/entries?' + new URLSearchParams(input as Record<string, string>).toString());
+    // Filter out undefined values before creating URLSearchParams
+    const params = Object.fromEntries(
+      Object.entries(input).filter(([_, v]) => v !== undefined)
+    );
+    const queryString = Object.keys(params).length > 0
+      ? '?' + new URLSearchParams(params as Record<string, string>).toString()
+      : '';
+    const result = await apiClient.get<{ success: boolean; entries?: CoworkUserMemoryEntry[]; error?: string }>('/cowork/memory/entries' + queryString);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async createMemoryEntry(input: {
@@ -360,7 +405,8 @@ const cowork = {
     confidence?: number;
     isExplicit?: boolean;
   }): Promise<{ success: boolean; entry?: CoworkUserMemoryEntry; error?: string }> {
-    return apiClient.post('/cowork/memory/entries', input);
+    const result = await apiClient.post<{ success: boolean; entry?: CoworkUserMemoryEntry; error?: string }>('/cowork/memory/entries', input);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async updateMemoryEntry(input: {
@@ -370,15 +416,28 @@ const cowork = {
     status?: 'created' | 'stale' | 'deleted';
     isExplicit?: boolean;
   }): Promise<{ success: boolean; entry?: CoworkUserMemoryEntry; error?: string }> {
-    return apiClient.put(`/cowork/memory/entries/${encodeURIComponent(input.id)}`, input);
+    const result = await apiClient.put<{ success: boolean; entry?: CoworkUserMemoryEntry; error?: string }>(`/cowork/memory/entries/${encodeURIComponent(input.id)}`, input);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async deleteMemoryEntry(input: { id: string }): Promise<{ success: boolean; error?: string }> {
-    return apiClient.delete(`/cowork/memory/entries/${encodeURIComponent(input.id)}`);
+    const result = await apiClient.delete<{ success: boolean; error?: string }>(`/cowork/memory/entries/${encodeURIComponent(input.id)}`);
+    return result.data || { success: false, error: 'No data returned' };
   },
 
   async getMemoryStats(): Promise<{ success: boolean; stats?: CoworkMemoryStats; error?: string }> {
-    return apiClient.get('/cowork/memory/stats');
+    const result = await apiClient.get<{ success: boolean; stats?: CoworkMemoryStats; error?: string }>('/cowork/memory/stats');
+    return result.data || { success: false, error: 'No data returned' };
+  },
+
+  // Subscribe to session updates via WebSocket room
+  subscribeToSession(sessionId: string): void {
+    webSocketClient.send('subscribe', `cowork:${sessionId}`);
+  },
+
+  // Unsubscribe from session updates
+  unsubscribeFromSession(sessionId: string): void {
+    webSocketClient.send('unsubscribe', `cowork:${sessionId}`);
   },
 
   // Stream event listeners
@@ -409,53 +468,53 @@ const cowork = {
 // ============================================================================
 const scheduledTasks = {
   async list(): Promise<any> {
-    return apiClient.get('/scheduled-tasks');
+    return apiClient.get('/tasks');
   },
 
   async get(id: string): Promise<any> {
-    return apiClient.get(`/scheduled-tasks/${encodeURIComponent(id)}`);
+    return apiClient.get(`/tasks/${encodeURIComponent(id)}`);
   },
 
   async create(input: any): Promise<any> {
-    return apiClient.post('/scheduled-tasks', input);
+    return apiClient.post('/tasks', input);
   },
 
   async update(id: string, input: any): Promise<any> {
-    return apiClient.put(`/scheduled-tasks/${encodeURIComponent(id)}`, input);
+    return apiClient.put(`/tasks/${encodeURIComponent(id)}`, input);
   },
 
   async delete(id: string): Promise<any> {
-    return apiClient.delete(`/scheduled-tasks/${encodeURIComponent(id)}`);
+    return apiClient.delete(`/tasks/${encodeURIComponent(id)}`);
   },
 
   async toggle(id: string, enabled: boolean): Promise<any> {
-    return apiClient.post(`/scheduled-tasks/${encodeURIComponent(id)}/toggle`, { enabled });
+    return apiClient.post(`/tasks/${encodeURIComponent(id)}/toggle`, { enabled });
   },
 
   async runManually(id: string): Promise<any> {
-    return apiClient.post(`/scheduled-tasks/${encodeURIComponent(id)}/run`, {});
+    return apiClient.post(`/tasks/${encodeURIComponent(id)}/run`, {});
   },
 
   async stop(id: string): Promise<any> {
-    return apiClient.post(`/scheduled-tasks/${encodeURIComponent(id)}/stop`, {});
+    return apiClient.post(`/tasks/${encodeURIComponent(id)}/stop`, {});
   },
 
   async listRuns(taskId: string, limit?: number, offset?: number): Promise<any> {
     const params = new URLSearchParams();
     if (limit) params.set('limit', String(limit));
     if (offset) params.set('offset', String(offset));
-    return apiClient.get(`/scheduled-tasks/${encodeURIComponent(taskId)}/runs?${params}`);
+    return apiClient.get(`/tasks/${encodeURIComponent(taskId)}/runs?${params}`);
   },
 
   async countRuns(taskId: string): Promise<any> {
-    return apiClient.get(`/scheduled-tasks/${encodeURIComponent(taskId)}/runs/count`);
+    return apiClient.get(`/tasks/${encodeURIComponent(taskId)}/runs/count`);
   },
 
   async listAllRuns(limit?: number, offset?: number): Promise<any> {
     const params = new URLSearchParams();
     if (limit) params.set('limit', String(limit));
     if (offset) params.set('offset', String(offset));
-    return apiClient.get(`/scheduled-tasks/runs/all?${params}`);
+    return apiClient.get(`/tasks/runs/all?${params}`);
   },
 
   onStatusUpdate(callback: (data: any) => void): () => void {
@@ -471,18 +530,18 @@ const scheduledTasks = {
 // API Config
 // ============================================================================
 async function getApiConfig(): Promise<CoworkApiConfig | null> {
-  const result = await apiClient.get('/api-config');
-  return result.data as CoworkApiConfig || null;
+  const result = await apiClient.get('/cowork/api-config');
+  return (result.data as { data?: CoworkApiConfig })?.data || null;
 }
 
 async function checkApiConfig(options?: { probeModel?: boolean }): Promise<{ hasConfig: boolean; config: CoworkApiConfig | null; error?: string }> {
   const params = options?.probeModel ? '?probeModel=true' : '';
-  const result = await apiClient.get(`/api-config/check${params}`);
-  return result.data as { hasConfig: boolean; config: CoworkApiConfig | null; error?: string } || { hasConfig: false, config: null };
+  const result = await apiClient.get(`/cowork/api-config/check${params}`);
+  return (result.data as { data?: { hasConfig: boolean; config: CoworkApiConfig | null; error?: string } })?.data || { hasConfig: false, config: null };
 }
 
 async function saveApiConfig(config: CoworkApiConfig): Promise<{ success: boolean; error?: string }> {
-  return apiClient.put('/api-config', config);
+  return apiClient.put('/cowork/api-config', config);
 }
 
 // ============================================================================
@@ -495,7 +554,7 @@ async function generateSessionTitle(userInput: string | null): Promise<string> {
 
 async function getRecentCwds(limit?: number): Promise<string[]> {
   const params = limit ? `?limit=${limit}` : '';
-  const result = await apiClient.get(`/cowork/cwds/recent${params}`);
+  const result = await apiClient.get(`/cowork/recentCwds${params}`);
   return result.data as string[] || [];
 }
 
@@ -576,8 +635,20 @@ const shell = {
 };
 
 // ============================================================================
-// Auto Launch (Not applicable in web, removed)
+// Auto Launch (Web simulation)
 // ============================================================================
+const autoLaunch = {
+  async get(): Promise<{ enabled: boolean }> {
+    // Not applicable in web, return default
+    return { enabled: false };
+  },
+
+  async set(_enabled: boolean): Promise<{ success: boolean }> {
+    // Not applicable in web, just return success
+    console.warn('[ElectronShim] Auto-launch not available in web');
+    return { success: true };
+  },
+};
 
 // ============================================================================
 // App Info
@@ -654,6 +725,7 @@ interface ElectronShim {
   scheduledTasks: typeof scheduledTasks;
   permissions: typeof permissions;
   networkStatus: typeof networkStatus;
+  autoLaunch: typeof autoLaunch;
   cowork: typeof cowork;
   files: typeof files;
   workspace: typeof workspace;
@@ -679,6 +751,7 @@ export function createElectronShim(): ElectronShim {
     scheduledTasks,
     permissions,
     networkStatus,
+    autoLaunch,
     cowork,
     files,
     workspace,

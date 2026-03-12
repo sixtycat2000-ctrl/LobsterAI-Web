@@ -28,7 +28,7 @@ const TaskList: React.FC = () => {
 
   const loadTasks = async () => {
     try {
-      const response = await apiClient.get<{ tasks: ScheduledTask[] }>('/scheduled-tasks');
+      const response = await apiClient.get<{ tasks: ScheduledTask[] }>('/tasks');
       if (response.success && response.data) {
         setTasks(response.data.tasks || []);
       }
@@ -41,7 +41,7 @@ const TaskList: React.FC = () => {
 
   const runTask = async (taskId: string) => {
     try {
-      await apiClient.post(`/scheduled-tasks/${taskId}/run`);
+      await apiClient.post(`/tasks/${taskId}/run`);
     } catch (error) {
       console.error('Failed to run task:', error);
     }
@@ -49,13 +49,11 @@ const TaskList: React.FC = () => {
 
   const toggleTask = async (taskId: string, enabled: boolean) => {
     try {
-      const response = await apiClient.put(`/scheduled-tasks/${taskId}`, {
-        schedule: { enabled },
-      });
+      const response = await apiClient.post(`/tasks/${taskId}/toggle`, { enabled });
       if (response.success) {
-        setTasks(tasks.map(t => 
-          t.id === taskId 
-            ? { ...t, schedule: { ...t.schedule, enabled } } 
+        setTasks(tasks.map(t =>
+          t.id === taskId
+            ? { ...t, schedule: { ...t.schedule, enabled } }
             : t
         ));
       }
@@ -67,7 +65,7 @@ const TaskList: React.FC = () => {
   const deleteTask = async (taskId: string) => {
     if (!confirm('确定要删除这个任务吗？')) return;
     try {
-      const response = await apiClient.delete(`/scheduled-tasks/${taskId}`);
+      const response = await apiClient.delete(`/tasks/${taskId}`);
       if (response.success) {
         setTasks(tasks.filter(t => t.id !== taskId));
       }

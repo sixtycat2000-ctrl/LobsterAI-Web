@@ -1,4 +1,4 @@
-import { app, BrowserWindow, session } from 'electron';
+import { app, BrowserWindow, session } from '../../server/shims/electron';
 import { execSync, spawn, spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';

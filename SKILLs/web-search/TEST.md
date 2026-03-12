@@ -18,7 +18,7 @@ This guide walks through testing the entire Web Search Skill integration with Lo
 
 1. Start LobsterAI in development mode:
    ```bash
-   npm run electron:dev
+   pnpm run electron:dev
    ```
 
 2. Check the console output for:
@@ -273,7 +273,7 @@ bash SKILLs/web-search/scripts/search.sh "test" 1
 **Debug:**
 ```bash
 cat SKILLs/web-search/.server.log
-npm run build --prefix SKILLs/web-search
+pnpm run build --prefix SKILLs/web-search
 ```
 
 ### Issue 2: Chrome Not Found
