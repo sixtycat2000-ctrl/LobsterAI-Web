@@ -12,7 +12,7 @@
     "node": ">=24 <25"
   },
   "bin": {
-    "lobsterai": "./server/dist/src/cli.js"
+    "lobsterai": "server/dist/src/cli.js"
   },
   "main": "./server/dist/src/index.js",
   "files": [
